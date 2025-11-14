@@ -9,4 +9,5 @@ import com.orangehearth.OrangeHearth.model.entity.Tutor;
 public interface RepositorioTutores extends JpaRepository<Tutor, Long> {
 	Optional<Tutor> findByDocumentNumber(String documentNumber);
 	boolean existsByDocumentNumber(String documentNumber);
+	Optional<Tutor> findByUserAccountEmailIgnoreCase(String email);
 }

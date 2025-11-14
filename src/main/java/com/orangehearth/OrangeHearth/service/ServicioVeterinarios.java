@@ -93,13 +93,14 @@ public class ServicioVeterinarios {
             request.tarjetaProfesional(),
             request.especialidad(),
             request.aniosExperiencia(),
+            request.cedula(),
             EstadoCuenta.ACTIVE
         );
     }
 
     @Transactional(readOnly = true)
     public List<RespuestaVeterinario> findAll() {
-        String sql = "SELECT mv.id_mv, mv.nombre_mv, mv.apell_mv, mv.telefono, mv.especialidad, mv.tarjeta_profesional_mv, mv.correo, mv.estado FROM medico_veterinario mv";
+        String sql = "SELECT mv.id_mv, mv.nombre_mv, mv.apell_mv, mv.telefono, mv.especialidad, mv.tarjeta_profesional_mv, mv.correo, mv.cedu_mv, mv.estado FROM medico_veterinario mv";
         return jdbcTemplate.query(sql, (rs, i) -> new RespuestaVeterinario(
             rs.getLong("id_mv"),
             (rs.getString("nombre_mv") + " " + rs.getString("apell_mv")).trim(),
@@ -108,19 +109,13 @@ public class ServicioVeterinarios {
             rs.getString("tarjeta_profesional_mv"),
             rs.getString("especialidad"),
             null,
+            rs.getString("cedu_mv"),
             mapEstadoEs(rs.getString("estado"))
         ));
     }
 
     @Transactional
     public RespuestaVeterinario update(Long id, SolicitudActualizacionVeterinario request) {
-        Integer dup = jdbcTemplate.query(
-            "SELECT 1 FROM medico_veterinario WHERE tarjeta_profesional_mv=? AND id_mv<>? LIMIT 1",
-            ps -> { ps.setString(1, request.tarjetaProfesional()); ps.setLong(2, id); },
-            rs -> rs.next() ? 1 : 0
-        );
-        if (dup != null && dup == 1) throw new ExcepcionValidacion("La tarjeta profesional ya está registrada.");
-
         String nombre = request.nombreCompleto();
         String apellido = "";
         if (nombre != null && nombre.trim().contains(" ")) {
@@ -129,8 +124,8 @@ public class ServicioVeterinarios {
             nombre = nombre.trim().substring(0, idx);
         }
         jdbcTemplate.update(
-            "UPDATE medico_veterinario SET nombre_mv=?, apell_mv=?, telefono=?, especialidad=?, tarjeta_profesional_mv=?, correo=? WHERE id_mv=?",
-            nombre, apellido, request.telefono(), request.especialidad(), request.tarjetaProfesional(), request.correo().toLowerCase(), id
+            "UPDATE medico_veterinario SET nombre_mv=?, apell_mv=?, telefono=?, especialidad=?, correo=? WHERE id_mv=?",
+            nombre, apellido, request.telefono(), request.especialidad(), request.correo().toLowerCase(), id
         );
         return getById(id);
     }
@@ -143,7 +138,7 @@ public class ServicioVeterinarios {
 
     @Transactional(readOnly = true)
     public RespuestaVeterinario getById(Long id) {
-        String sql = "SELECT mv.id_mv, mv.nombre_mv, mv.apell_mv, mv.telefono, mv.especialidad, mv.tarjeta_profesional_mv, mv.correo, mv.estado FROM medico_veterinario mv WHERE mv.id_mv=?";
+        String sql = "SELECT mv.id_mv, mv.nombre_mv, mv.apell_mv, mv.telefono, mv.especialidad, mv.tarjeta_profesional_mv, mv.correo, mv.cedu_mv, mv.estado FROM medico_veterinario mv WHERE mv.id_mv=?";
         return jdbcTemplate.query(sql, ps -> ps.setLong(1, id), rs -> {
             if (rs.next()) {
                 return new RespuestaVeterinario(
@@ -154,6 +149,7 @@ public class ServicioVeterinarios {
                     rs.getString("tarjeta_profesional_mv"),
                     rs.getString("especialidad"),
                     null,
+                    rs.getString("cedu_mv"),
                     mapEstadoEs(rs.getString("estado"))
                 );
             }

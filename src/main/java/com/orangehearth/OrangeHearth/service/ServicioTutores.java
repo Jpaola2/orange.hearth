@@ -23,6 +23,7 @@ import com.orangehearth.OrangeHearth.model.enums.Rol;
 import com.orangehearth.OrangeHearth.model.value.Direccion;
 import com.orangehearth.OrangeHearth.repository.RepositorioTutores;
 import com.orangehearth.OrangeHearth.repository.RepositorioCuentasUsuario;
+import com.orangehearth.OrangeHearth.repository.RepositorioMascotas;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +33,7 @@ public class ServicioTutores {
 
 	private final RepositorioTutores tutorRepository;
 	private final RepositorioCuentasUsuario userAccountRepository;
+	private final RepositorioMascotas mascotaRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final ServicioPoliticaContrasena passwordPolicyService;
 
@@ -49,6 +51,8 @@ public class ServicioTutores {
 		CuentaUsuario account = CuentaUsuario.builder()
 			.fullName(request.nombreCompleto())
 			.email(request.correo().toLowerCase())
+			.securityQuestion("¿Cuál es el nombre de tu primera mascota?")
+			.securityAnswerHash(passwordEncoder.encode(request.securityAnswer()))
 			.password(passwordEncoder.encode(request.password()))
 			.role(Rol.TUTOR)
 			.status(EstadoCuenta.ACTIVE)
@@ -64,11 +68,17 @@ public class ServicioTutores {
 			.address(buildDireccion(request.direccion()))
 			.build();
 
-		Mascota mascota = buildMascota(request.mascota(), tutor);
-		tutor.getMascotas().add(mascota);
+		// Persistir primero el tutor
+		Tutor savedTutor = tutorRepository.save(tutor);
 
-		Tutor saved = tutorRepository.save(tutor);
-		return mapToResponse(saved);
+		// Crear y guardar la primera mascota asociada al tutor
+		if (request.mascota() != null) {
+			Mascota mascota = buildMascota(request.mascota(), savedTutor);
+			Mascota savedMascota = mascotaRepository.save(mascota);
+			savedTutor.getMascotas().add(savedMascota);
+		}
+
+		return mapToResponse(savedTutor);
 	}
 
 	@Transactional(readOnly = true)

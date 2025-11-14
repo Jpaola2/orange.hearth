@@ -22,14 +22,8 @@ public class ConfiguracionWeb implements WebMvcConfigurer {
         registry.addViewController("/registro.html").setViewName("registro");
 
         // Otras vistas usadas en el frontend (dashboards y páginas auxiliares)
-        registry.addViewController("/dashboardTutor").setViewName("dashboardTutor");
-        registry.addViewController("/dashboardTutor.html").setViewName("dashboardTutor");
-
         registry.addViewController("/dashboardVeterinario").setViewName("dashboardVeterinario");
         registry.addViewController("/dashboardVeterinario.html").setViewName("dashboardVeterinario");
-
-        registry.addViewController("/dashboardAdmin").setViewName("dashboardAdmin");
-        registry.addViewController("/dashboardAdmin.html").setViewName("dashboardAdmin");
 
         registry.addViewController("/AgendaMedica").setViewName("AgendaMedica");
         registry.addViewController("/AgendaMedica.html").setViewName("AgendaMedica");
@@ -53,4 +47,3 @@ public class ConfiguracionWeb implements WebMvcConfigurer {
         registry.addViewController("/test_conexion.html").setViewName("test_conexion");
     }
 }
-

@@ -10,5 +10,6 @@ public record RespuestaVeterinario(
 	String tarjetaProfesional,
 	String especialidad,
 	Integer aniosExperiencia,
+	String cedula,
 	EstadoCuenta estado
 ) { }

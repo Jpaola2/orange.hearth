@@ -20,6 +20,8 @@ public record SolicitudRegistroTutor(
 	String correo,
 	@NotBlank(message = "La contraseña es obligatoria")
 	String password,
+	@NotBlank(message = "La respuesta de seguridad es obligatoria")
+	String securityAnswer,
 	@Valid SolicitudDireccion direccion,
 	@Valid SolicitudMascota mascota
 ) { }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
 <link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
 
@@ -351,9 +351,9 @@
 
   <div class="main">
     <div class="welcome-section">
-      <h1 id="saludo">
+      <h1 th:inline="text">
         <i class="fas fa-heart"></i>
-        Cargando...
+        ¡Hola, [[${nombreTutor}]]!
       </h1>
       <p>Gestiona el cuidado de tus mascotas desde un solo lugar</p>
     </div>
@@ -389,134 +389,68 @@
         <i class="fas fa-paw"></i>
         Mis Mascotas
       </h2>
-      <div class="pets-grid" id="pets-container">
-        <!-- Se llenará dinámicamente -->
+
+      <div class="no-pets" th:if="${mascotas == null or #lists.isEmpty(mascotas)}">
+        <i class="fas fa-paw"></i>
+        <h3>No tienes mascotas registradas</h3>
+        <p>Agrega tu primera mascota para comenzar a gestionar su cuidado</p>
+      </div>
+
+      <div class="pets-grid" id="pets-container"
+           th:if="${mascotas != null and !#lists.isEmpty(mascotas)}">
+        <div class="pet-card" th:each="mascota, iter : ${mascotas}"
+             th:onclick="|verDetallesMascota('${mascota.nombre}', ${iter.index})|">
+          <div class="pet-header">
+            <div class="pet-avatar"
+                 th:text="${#strings.toUpperCase(mascota.nombre != null && mascota.nombre.length() > 0 ? mascota.nombre.substring(0,1) : 'M')}">
+              M
+            </div>
+            <div class="pet-info">
+              <h3 th:text="${mascota.nombre}">Nombre</h3>
+              <p th:text="${mascota.especie + ' • ' + mascota.edadValor + ' ' + mascota.edadUnidad}">
+                Especie • Edad
+              </p>
+            </div>
+          </div>
+
+          <div class="pet-details">
+            <div class="detail-item">
+              <i class="fas fa-birthday-cake"></i>
+              <span th:text="${mascota.edadValor + ' ' + mascota.edadUnidad}">Edad</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-tag"></i>
+              <span th:text="${mascota.raza != null ? mascota.raza : 'Sin especificar'}">Raza</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-heart"></i>
+              <span th:text="${mascota.especie}">Especie</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-calendar"></i>
+              <span>Último chequeo</span>
+            </div>
+          </div>
+
+          <div class="pet-actions">
+            <button class="btn-small btn-primary"
+                    onclick="event.stopPropagation();"
+                    th:onclick="|event.stopPropagation(); agendarCita('${mascota.nombre}')|">
+              <i class="fas fa-calendar-plus"></i> Agendar Cita
+            </button>
+            <button class="btn-small btn-secondary"
+                    onclick="event.stopPropagation();"
+                    th:onclick="|event.stopPropagation(); verHistorial('${mascota.nombre}')|">
+              <i class="fas fa-history"></i> Historial
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    // Variables globales
-    let tutorActivo = localStorage.getItem("tutorActivo");
-    let tutorNombre = "";
-
-    // Inicializar dashboard
-    document.addEventListener('DOMContentLoaded', function() {
-      cargarDatosTutor();
-      cargarMascotas();
-    });
-
-    function cargarDatosTutor() {
-      if (!tutorActivo) {
-        alert("Debes iniciar sesión para acceder");
-        window.location.href = "login-rol.html";
-        return;
-      }
-
-      // Buscar en la lista correcta de usuarios registrados
-      const usuarios = JSON.parse(localStorage.getItem('registrosUsuarios') || '[]');
-      const usuario = usuarios.find(user => user.correo === tutorActivo);
-
-      if (usuario) {
-        tutorNombre = usuario.nombre.split(' ')[0]; // Solo primer nombre
-      } else {
-        // Si no se encuentra, mostramos un nombre genérico para evitar errores
-        tutorNombre = "Tutor";
-        console.warn("No se encontró el perfil del tutor en localStorage. Se usará un nombre genérico.");
-      }
-
-      document.getElementById('saludo').innerHTML = `
-        <i class="fas fa-heart"></i>
-        ¡Hola, ${tutorNombre}!
-      `;
-    }
-
-    function cargarMascotas() {
-      const container = document.getElementById('pets-container');
-      const mascotas = JSON.parse(localStorage.getItem(`mascotas_${tutorActivo}`) || '[]');
-
-      console.log('Mascotas encontradas:', mascotas);
-
-      if (mascotas.length === 0) {
-        container.innerHTML = `
-          <div class="no-pets">
-            <i class="fas fa-paw"></i>
-            <h3>No tienes mascotas registradas</h3>
-            <p>Agrega tu primera mascota para comenzar a gestionar su cuidado</p>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = mascotas.map((mascota, index) => {
-        const inicial = mascota.nombre.charAt(0).toUpperCase();
-        const cita = obtenerProximaCita(mascota.nombre);
-        
-        return `
-          <div class="pet-card" onclick="verDetallesMascota('${mascota.nombre}', ${index})">
-            <div class="pet-header">
-              <div class="pet-avatar">${inicial}</div>
-              <div class="pet-info">
-                <h3>${mascota.nombre}</h3>
-                <p>${mascota.especie} • ${mascota.edad}</p>
-              </div>
-            </div>
-            
-            <div class="pet-details">
-              <div class="detail-item">
-                <i class="fas fa-birthday-cake"></i>
-                <span>${mascota.edad}</span>
-              </div>
-              <div class="detail-item">
-                <i class="fas fa-tag"></i>
-                <span>${mascota.raza || 'Sin especificar'}</span>
-              </div>
-              <div class="detail-item">
-                <i class="fas fa-heart"></i>
-                <span>${mascota.especie}</span>
-              </div>
-              <div class="detail-item">
-                <i class="fas fa-calendar"></i>
-                <span>Último chequeo</span>
-              </div>
-            </div>
-
-            ${cita ? `
-              <div class="upcoming-appointment">
-                <h4>
-                  <i class="fas fa-calendar-check"></i>
-                  Próxima Cita
-                </h4>
-                <div class="appointment-details">
-                  <strong>${cita.fecha}</strong> a las <strong>${cita.hora}</strong><br>
-                  Dr. ${cita.veterinario} - ${cita.especialidad || 'Consulta General'}
-                </div>
-                <div class="appointment-actions">
-                  <button class="btn-small btn-confirm" onclick="event.stopPropagation(); confirmarCita('${mascota.nombre}')">
-                    <i class="fas fa-check"></i> Confirmar
-                  </button>
-                  <button class="btn-small btn-reschedule" onclick="event.stopPropagation(); reprogramarCita('${mascota.nombre}')">
-                    <i class="fas fa-edit"></i> Reprogramar
-                  </button>
-                  <button class="btn-small btn-cancel" onclick="event.stopPropagation(); cancelarCita('${mascota.nombre}')">
-                    <i class="fas fa-times"></i> Cancelar
-                  </button>
-                </div>
-              </div>
-            ` : ''}
-
-            <div class="pet-actions">
-              <button class="btn-small btn-primary" onclick="event.stopPropagation(); agendarCita('${mascota.nombre}')">
-                <i class="fas fa-calendar-plus"></i> Agendar Cita
-              </button>
-              <button class="btn-small btn-secondary" onclick="event.stopPropagation(); verHistorial('${mascota.nombre}')">
-                <i class="fas fa-history"></i> Historial
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
+	    // Nota: el saludo y la lista de mascotas ahora se cargan desde el servidor (Thymeleaf).
 
     function obtenerProximaCita(nombreMascota) {
       const citas = JSON.parse(localStorage.getItem(`citas_${nombreMascota}`) || '[]');

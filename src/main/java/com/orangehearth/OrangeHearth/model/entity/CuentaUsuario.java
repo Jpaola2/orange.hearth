@@ -41,6 +41,12 @@ public class CuentaUsuario extends EntidadAuditable {
 	@Column(name = "password_hash")
 	private String password;
 
+	@Column(name = "security_question", length = 255, nullable = true)
+	private String securityQuestion;
+
+	@Column(name = "security_answer_hash", length = 255, nullable = true)
+	private String securityAnswerHash;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private Rol role;

@@ -454,43 +454,38 @@
     </aside>
 
     <main class="main-content">
-      <section id="resumen" class="section active">
-        <h3><i class="fas fa-chart-pie"></i> Resumen Gerencial y KPIs</h3>
-        
-        <div class="stats-grid">
-          <div class="stat-card usuarios">
-            <div class="stat-number" id="totalUsuarios">0</div>
-            <div class="stat-label">Usuarios (Tutor/Vet)</div>
-          </div>
-          <div class="stat-card mascotas">
-            <div class="stat-number" id="totalMascotas">0</div>
-            <div class="stat-label">Mascotas Registradas</div>
-          </div>
-          <div class="stat-card veterinarios">
-            <div class="stat-number" id="totalVeterinarios">0</div>
-            <div class="stat-label">Veterinarios Activos</div>
-          </div>
-          <div class="stat-card citas">
-            <div class="stat-number" id="citasPendientes">0</div>
-            <div class="stat-label">Citas Pendientes</div>
-          </div>
-          <div class="stat-card clinica">
-            <div class="stat-number" id="historialesCreados">0</div>
-            <div class="stat-label">Historias Clínicas Creadas</div>
-          </div>
-          <div class="stat-card clinica" style="border-bottom-color: var(--verde);">
-            <div class="stat-number" id="mascotasAngelito">0</div>
-            <div class="stat-label">Mascotas Fallecidas😇</div>
-          </div>
-        </div>
+	      <section id="resumen" class="section active">
+	        <h3><i class="fas fa-chart-pie"></i> Resumen Gerencial</h3>
+	        
+	        <div class="stats-grid">
+	          <div class="stat-card usuarios">
+	            <div class="stat-number" id="totalUsuarios">0</div>
+	            <div class="stat-label">Usuarios (Tutor/Vet)</div>
+	          </div>
+	          <div class="stat-card mascotas">
+	            <div class="stat-number" id="totalMascotas">0</div>
+	            <div class="stat-label">Mascotas Registradas</div>
+	          </div>
+	          <div class="stat-card veterinarios">
+	            <div class="stat-number" id="totalVeterinarios">0</div>
+	            <div class="stat-label">Veterinarios Activos</div>
+	          </div>
+	          <div class="stat-card citas">
+	            <div class="stat-number" id="citasPendientes">0</div>
+	            <div class="stat-label">Citas Pendientes</div>
+	          </div>
+	          <div class="stat-card clinica">
+	            <div class="stat-number" id="historialesCreados">0</div>
+	            <div class="stat-label">Historias Clínicas Creadas</div>
+	          </div>
+	          <div class="stat-card clinica" style="border-bottom-color: var(--verde);">
+	            <div class="stat-number" id="mascotasAngelito">0</div>
+	            <div class="stat-label">Mascotas Fallecidas😇</div>
+	          </div>
+	        </div>
+	      </section>
 
-        <div class="chart-container">
-          <h4>Distribución de Usuarios por Tipo</h4>
-          <canvas id="userTypeChart" width="400" height="200"></canvas>
-        </div>
-      </section>
-
-      <section id="estadisticas" class="section">
+	      <section id="estadisticas" class="section">
         <h3><i class="fas fa-chart-line"></i> Estadísticas Detalladas</h3>
         <div class="chart-grid">
           <div class="chart-item">
@@ -808,7 +803,7 @@
           <!-- Campos de Documento -->
           <div class="form-group">
               <label for="modal-doc-tipo">Tipo de Documento</label>
-              <select id="modal-doc-tipo" required>
+              <select id="modal-doc-tipo" disabled>
                   <option value="CC">Cédula de Ciudadanía</option>
                   <option value="CE">Cédula de Extranjería</option>
                   <option value="PA">Pasaporte</option>
@@ -817,12 +812,12 @@
           </div>
           <div class="form-group">
               <label for="modal-doc-numero">Número de Documento</label>
-              <input type="text" id="modal-doc-numero" required>
+              <input type="text" id="modal-doc-numero" required readonly>
           </div>
           <!-- Fin de Campos de Documento -->
 
           <div class="form-group" id="modal-direccion-group" style="display: none;">
-              <label for="modal-direccion">Dirección</label>
+              <label for="modal-direccion">Dirección de residencia</label>
               <input type="text" id="modal-direccion">
           </div>
 
@@ -840,7 +835,7 @@
              <h4><i class="fas fa-user-md"></i> Datos de Veterinario</h4>
              <div class="form-group">
                  <label for="modal-vet-tarjeta">Tarjeta Profesional</label>
-                 <input type="text" id="modal-vet-tarjeta" name="tarjeta_profesional">
+                 <input type="text" id="modal-vet-tarjeta" name="tarjeta_profesional" readonly>
              </div>
              <div class="form-group">
                  <label for="modal-vet-especialidad">Especialidad</label>
@@ -935,9 +930,9 @@
     // =========================================================
     // let userTypeChartInstance, monthlyChartInstance, speciesChartInstance, activityChartInstance;
     // let allUsersCache = []; // Cache para la tabla de usuarios (mock)
-    // // Caches de datos reales (legacy) para filtros en memoria
-    // let legacyTutoresCache = [];
-    // let legacyVetsCache = [];
+    // Caches de datos reales para filtros en memoria
+    let tutoresCache = [];
+    let vetsCache = [];
 
     // =========================================================
     //                      SECCIÓN PRINCIPAL / INICIALIZACIÓN
@@ -994,11 +989,10 @@
         if (!tbody) return;
         tbody.innerHTML = '<tr><td colspan="6">Cargando...</td></tr>';
         try {
-            const token = localStorage.getItem('adminSessionToken');
-            const resp = await fetch('/api/admin/legacy/tutores', { headers: { 'X-ADMIN-TOKEN': (token||'').replace(/"/g,'') } });
-            const lista = await resp.json();
+            const resp = await fetch('/api/tutores');
+            const lista = await resp.json().catch(()=>[]);
             let data = Array.isArray(lista) ? lista : [];
-            legacyTutoresCache = data;
+            tutoresCache = data;
             // Popular especies únicas en el filtro
             try {
               const speciesSelect = document.getElementById('tutor-search-species');
@@ -1044,7 +1038,7 @@
         const species = (document.getElementById('tutor-search-species')?.value || '').toLowerCase();
         // Si no hay ningún criterio, recargar completo
         if (!text && !estado && !doc && (minPets===null) && !species) { cargarTablaTutores(); return; }
-        const source = Array.isArray(legacyTutoresCache) ? legacyTutoresCache : [];
+        const source = Array.isArray(tutoresCache) ? tutoresCache : [];
         const filtered = source.filter(t => {
             const nombre = (t.nombreCompleto||'').toLowerCase();
             const correo = (t.correo||'').toLowerCase();
@@ -1073,17 +1067,10 @@
         const token = localStorage.getItem('adminSessionToken');
         if (!token) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Inicia sesión como Gerente.</td></tr>'; return; }
         try {
-            // 1) Intentar dominio actual
             let resp = await fetch('/api/admin/veterinarios', { headers: { 'X-ADMIN-TOKEN': token.replace(/"/g,'') } });
             let lista = await resp.json().catch(()=>[]);
             let data = Array.isArray(lista) ? lista : [];
-            // 2) Si no hay resultados, usar legacy
-            if (!data.length) {
-                resp = await fetch('/api/admin/legacy/veterinarios', { headers: { 'X-ADMIN-TOKEN': token.replace(/"/g,'') } });
-                lista = await resp.json().catch(()=>[]);
-                data = Array.isArray(lista) ? lista : [];
-            }
-            legacyVetsCache = data;
+            vetsCache = data;
             if (filtered) data = filtered;
             tbody.innerHTML = '';
             data.forEach(v => {
@@ -1109,7 +1096,7 @@
         const text = (document.getElementById('vet-search-text')?.value || '').toLowerCase();
         const estadoSel = (document.getElementById('vet-search-status')?.value || '').toLowerCase();
         if (!text && !estadoSel) { cargarTablaVeterinarios(); return; }
-        const source = Array.isArray(legacyVetsCache) ? legacyVetsCache : [];
+        const source = Array.isArray(vetsCache) ? vetsCache : [];
         const filtered = source.filter(v => {
             const nombre = (v.nombreCompleto||'').toLowerCase();
             const correo = (v.correo||'').toLowerCase();
@@ -1352,21 +1339,21 @@
 
     async function exportAllUsersCSV() {
         try {
-          const token = (localStorage.getItem('adminSessionToken')||'').replace(/\"/g,'');
-          if (!token) { alert('Debes iniciar sesión como Gerente para cambiar el estado del tutor.'); return false; }
             // Asegurar data en cache
-            if (!legacyTutoresCache.length) {
-                const rt = await fetch('/api/admin/legacy/tutores', { headers: { 'X-ADMIN-TOKEN': token } });
-                legacyTutoresCache = await rt.json();
+            if (!tutoresCache.length) {
+                const rt = await fetch('/api/tutores');
+                tutoresCache = await rt.json();
             }
-            if (!legacyVetsCache.length) {
-                const rv = await fetch('/api/admin/legacy/veterinarios', { headers: { 'X-ADMIN-TOKEN': token } });
-                legacyVetsCache = await rv.json();
+            const token = (localStorage.getItem('adminSessionToken')||'').replace(/\"/g,'');
+            if (!token) { alert('Debes iniciar sesión como Gerente para obtener la lista de veterinarios.'); return false; }
+            if (!vetsCache.length) {
+                const rv = await fetch('/api/admin/veterinarios', { headers: { 'X-ADMIN-TOKEN': token } });
+                vetsCache = await rv.json();
             }
             const rows = [];
             rows.push(['Tipo','Nombre','Email','Teléfono','Especialidad','Tarjeta','Mascotas','Estado']);
-            (legacyTutoresCache||[]).forEach(t => rows.push(['Tutor', t.nombreCompleto||'', t.correo||'', t.telefono||'', '', '', (t.mascotas||[]).length||0, 'ACTIVO']));
-            (legacyVetsCache||[]).forEach(v => rows.push(['Veterinario', v.nombreCompleto||'', v.correo||'', v.telefono||'', v.especialidad||'', v.tarjetaProfesional||'', '', (v.estado||'ACTIVE')]));
+            (tutoresCache||[]).forEach(t => rows.push(['Tutor', t.nombreCompleto||'', t.correo||'', t.telefono||'', '', '', (t.mascotas||[]).length||0, (t.estado||'ACTIVE')]));
+            (vetsCache||[]).forEach(v => rows.push(['Veterinario', v.nombreCompleto||'', v.correo||'', v.telefono||'', v.especialidad||'', v.tarjetaProfesional||'', '', (v.estado||v.status||'ACTIVE')]));
             const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
@@ -1378,14 +1365,15 @@
 
     async function exportAllUsersPDF() {
         try {
-            const token = (localStorage.getItem('adminSessionToken')||'').replace(/\"/g,'');
-            if (!legacyTutoresCache.length) {
-                const rt = await fetch('/api/admin/legacy/tutores', { headers: { 'X-ADMIN-TOKEN': token } });
-                legacyTutoresCache = await rt.json();
+            if (!tutoresCache.length) {
+                const rt = await fetch('/api/tutores');
+                tutoresCache = await rt.json();
             }
-            if (!legacyVetsCache.length) {
-                const rv = await fetch('/api/admin/legacy/veterinarios', { headers: { 'X-ADMIN-TOKEN': token } });
-                legacyVetsCache = await rv.json();
+            const token = (localStorage.getItem('adminSessionToken')||'').replace(/\"/g,'');
+            if (!token) { alert('Debes iniciar sesión como Gerente para obtener la lista de veterinarios.'); return false; }
+            if (!vetsCache.length) {
+                const rv = await fetch('/api/admin/veterinarios', { headers: { 'X-ADMIN-TOKEN': token } });
+                vetsCache = await rv.json();
             }
             const w = window.open('', '_blank');
             w.document.write('<html><head><title>Usuarios de la Clínica</title>');
@@ -1393,8 +1381,8 @@
             w.document.write('</head><body>');
             w.document.write('<h3>Usuarios de la Clínica</h3>');
             w.document.write('<table><thead><tr><th>Tipo</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Especialidad</th><th>Tarjeta</th><th>Mascotas</th><th>Estado</th></tr></thead><tbody>');
-            (legacyTutoresCache||[]).forEach(t => { w.document.write(`<tr><td>Tutor</td><td>${t.nombreCompleto||''}</td><td>${t.correo||''}</td><td>${t.telefono||''}</td><td></td><td></td><td>${(t.mascotas||[]).length||0}</td><td>ACTIVO</td></tr>`); });
-            (legacyVetsCache||[]).forEach(v => { w.document.write(`<tr><td>Veterinario</td><td>${v.nombreCompleto||''}</td><td>${v.correo||''}</td><td>${v.telefono||''}</td><td>${v.especialidad||''}</td><td>${v.tarjetaProfesional||''}</td><td></td><td>${v.estado||'ACTIVE'}</td></tr>`); });
+            (tutoresCache||[]).forEach(t => { w.document.write(`<tr><td>Tutor</td><td>${t.nombreCompleto||''}</td><td>${t.correo||''}</td><td>${t.telefono||''}</td><td></td><td></td><td>${(t.mascotas||[]).length||0}</td><td>${t.estado||'ACTIVE'}</td></tr>`); });
+            (vetsCache||[]).forEach(v => { w.document.write(`<tr><td>Veterinario</td><td>${v.nombreCompleto||''}</td><td>${v.correo||''}</td><td>${v.telefono||''}</td><td>${v.especialidad||''}</td><td>${v.tarjetaProfesional||''}</td><td></td><td>${v.estado||v.status||'ACTIVE'}</td></tr>`); });
             w.document.write('</tbody></table></body></html>');
             w.document.close();
             w.focus();
@@ -1855,11 +1843,11 @@
       if (direccionGroup) direccionGroup.style.display = 'none';
       if (estadoGroup) estadoGroup.style.display = 'none';
       mascotasListDiv.innerHTML = '';
-      // Reset de validaciones para evitar bloqueo por campos ocultos
-      if (vetTarjeta) { vetTarjeta.required = false; vetTarjeta.disabled = true; }
-      if (vetEspecialidad) { vetEspecialidad.required = false; vetEspecialidad.disabled = true; }
-      if (docTipo) { docTipo.required = true; docTipo.disabled = false; }
-      if (docNumero) { docNumero.required = true; docNumero.disabled = false; }
+	      // Reset de validaciones para evitar bloqueo por campos ocultos
+	      if (vetTarjeta) { vetTarjeta.required = false; vetTarjeta.readOnly = true; }
+	      if (vetEspecialidad) { vetEspecialidad.required = false; vetEspecialidad.disabled = true; }
+	      if (docTipo) { docTipo.required = false; docTipo.disabled = true; }
+	      if (docNumero) { docNumero.required = false; docNumero.readOnly = true; }
 
       const setCommon = (nombre, correo, telefono, estado, docTipo = 'CC', docNum = '') => {
         document.getElementById('modal-nombre').value = nombre || '';
@@ -1888,24 +1876,24 @@
         } else {
           const token = (localStorage.getItem('adminSessionToken')||'').replace(/\"/g,'');
           if (!token) { alert('Debes iniciar sesión como Gerente para modificar veterinarios.'); return; }
-          // Intento dominio actual, si falla, legacy
-          let resp = await fetch(`/api/admin/veterinarios/${userId}`, { headers: { 'X-ADMIN-TOKEN': token }});
-          let v = null;
-          if (resp.ok) { v = await resp.json(); }
-          if (!resp.ok || !v || !v.id) {
-            resp = await fetch(`/api/admin/legacy/veterinarios`, { headers: { 'X-ADMIN-TOKEN': token }});
-            const list = await resp.json().catch(()=>[]);
-            v = (Array.isArray(list)?list:[]).find(x=>x.id===userId);
-            if (!v) { alert('No se encontró el veterinario seleccionado.'); return; }
-          }
+          const resp = await fetch(`/api/admin/veterinarios/${userId}`, { headers: { 'X-ADMIN-TOKEN': token }});
+          if (!resp.ok) { alert('No se encontró el veterinario seleccionado.'); return; }
+          const v = await resp.json();
           vetFieldsDiv.style.display = 'block';
           if (estadoGroup) estadoGroup.style.display = 'block';
-          // Habilitar y requerir campos de vet; relajar documento
-          if (vetTarjeta) { vetTarjeta.disabled = false; vetTarjeta.required = true; }
-          if (vetEspecialidad) { vetEspecialidad.disabled = false; vetEspecialidad.required = true; }
-          if (docTipo) { docTipo.required = false; docTipo.disabled = true; }
-          if (docNumero) { docNumero.required = false; docNumero.disabled = true; }
-          setCommon(v.nombreCompleto||v.nombre, v.correo||v.email, v.telefono||v.phoneNumber, ((v.estado||v.status)||'ACTIVE').toLowerCase());
+	          // Habilitar especialidad; cédula y tarjeta profesional se muestran solo lectura
+	          if (vetTarjeta) { vetTarjeta.readOnly = true; }
+	          if (vetEspecialidad) { vetEspecialidad.disabled = false; vetEspecialidad.required = true; }
+	          if (docTipo) { docTipo.disabled = true; }
+	          if (docNumero) { docNumero.readOnly = true; }
+	          setCommon(
+	            v.nombreCompleto||v.nombre,
+	            v.correo||v.email,
+	            v.telefono||v.phoneNumber,
+	            ((v.estado||v.status)||'ACTIVE').toLowerCase(),
+	            'CC',
+	            v.cedula || ''
+	          );
           document.getElementById('modal-vet-tarjeta').value = v.tarjetaProfesional || v.professionalLicense || '';
           document.getElementById('modal-vet-especialidad').value = v.especialidad || '';
           // Habilitar edición de email para veterinario
@@ -1935,11 +1923,6 @@
           const payload = { telefono: telefono, direccion: { completo: direccion } };
           const resp = await fetch(`/api/tutores/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
           if (!resp.ok) { const d = await resp.json().catch(()=>null); throw new Error(d?.message || resp.status); }
-          // Actualizar estado del tutor vía admin legacy (user_accounts.status por email)
-          const token = (localStorage.getItem('adminSessionToken')||'').replace(/"/g,'');
-          const mapEstado = { activo: 'ACTIVE', inactivo: 'INACTIVE', pendiente: 'PENDING' };
-          const respEstadoTutor = await fetch(`/api/admin/legacy/tutores/${userId}/estado`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify({ estado: mapEstado[estado] || 'ACTIVE' }) });
-          if (!respEstadoTutor.ok) { const d2 = await respEstadoTutor.json().catch(()=>null); throw new Error(d2?.message || respEstadoTutor.status); }
           alert('✅ Cambios guardados para el Tutor.');
           cargarTablaTutores();
         } else {
@@ -1948,31 +1931,13 @@
           const tarjeta = document.getElementById('modal-vet-tarjeta').value.trim();
           const especialidad = document.getElementById('modal-vet-especialidad').value.trim();
           if (!nombre || !correo || !telefono || !especialidad || !tarjeta) { alert('Todos los campos del veterinario son obligatorios.'); return false; }
-          // 1) Intentar actualizar por dominio actual; si falla, usar legacy incluyendo cédula
-          let success = false; let errMsg = '';
-          try {
-            const payloadPut = { nombreCompleto: nombre, correo, telefono, especialidad, tarjetaProfesional: tarjeta };
-            const respPut = await fetch(`/api/admin/veterinarios/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadPut) });
-            if (respPut.ok) {
-              const mapEstado = { activo: 'ACTIVE', inactivo: 'INACTIVE', pendiente: 'PENDING' };
-              const payloadEstado = { estado: mapEstado[estado] || 'ACTIVE' };
-              const respEstado = await fetch(`/api/admin/veterinarios/${userId}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadEstado) });
-              if (!respEstado.ok) throw new Error('Estado: ' + respEstado.status);
-              success = true;
-            } else {
-              errMsg = 'HTTP '+respPut.status;
-            }
-          } catch (_) {}
-          if (!success) {
-            const cedula = document.getElementById('modal-doc-numero').value.trim();
-            const payloadLegacy = { nombreCompleto: nombre, correo, telefono, especialidad, tarjetaProfesional: tarjeta, cedula };
-            const respPutL = await fetch(`/api/admin/legacy/veterinarios/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadLegacy) });
-            if (!respPutL.ok) { const d = await respPutL.json().catch(()=>null); throw new Error(d?.message || errMsg || respPutL.status); }
-            const mapEstado = { activo: 'ACTIVE', inactivo: 'INACTIVE', pendiente: 'PENDING' };
-            const payloadEstado = { estado: mapEstado[estado] || 'ACTIVE' };
-            const respEstadoL = await fetch(`/api/admin/legacy/veterinarios/${userId}/estado`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadEstado) });
-            if (!respEstadoL.ok) { const d = await respEstadoL.json().catch(()=>null); throw new Error(d?.message || respEstadoL.status); }
-          }
+          const payloadPut = { nombreCompleto: nombre, correo, telefono, especialidad, tarjetaProfesional: tarjeta };
+          const respPut = await fetch(`/api/admin/veterinarios/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadPut) });
+          if (!respPut.ok) { const d = await respPut.json().catch(()=>null); throw new Error(d?.message || respPut.status); }
+          const mapEstado = { activo: 'ACTIVE', inactivo: 'INACTIVE', pendiente: 'PENDING' };
+          const payloadEstado = { estado: mapEstado[estado] || 'ACTIVE' };
+          const respEstado = await fetch(`/api/admin/veterinarios/${userId}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadEstado) });
+          if (!respEstado.ok) { const d2 = await respEstado.json().catch(()=>null); throw new Error(d2?.message || respEstado.status); }
           alert('✅ Datos del Veterinario actualizados.');
           cargarTablaVeterinarios();
         }
@@ -2055,7 +2020,7 @@
         } else {
           const token = (localStorage.getItem('adminSessionToken')||'').replace(/"/g,'');
           if (!token) { alert('Debes iniciar sesión como Gerente para modificar veterinarios.'); return; }
-          const resp = await fetch(`/api/admin/legacy/veterinarios/${userId}`, { headers: { 'X-ADMIN-TOKEN': token }});
+          const resp = await fetch(`/api/admin/veterinarios/${userId}`, { headers: { 'X-ADMIN-TOKEN': token }});
           if (!resp.ok) { alert('No se pudo cargar la información. HTTP ' + resp.status); return; }
           const v = await resp.json();
           vetFieldsDiv.style.display = 'block';
@@ -2063,7 +2028,6 @@
           // Habilitar y requerir campos del vet; relajar documento
           if (vetTarjeta) { vetTarjeta.disabled = false; vetTarjeta.required = true; }
           if (vetEspecialidad) { vetEspecialidad.disabled = false; vetEspecialidad.required = true; }
-          // Permitir modificar cédula (legacy: cedu_mv)
           if (docTipo) { docTipo.required = false; docTipo.disabled = false; }
           if (docNumero) { docNumero.required = false; docNumero.disabled = false; }
           setCommon(v.nombreCompleto||v.nombre, v.correo||v.email, v.telefono||v.phoneNumber, ((v.estado||v.status)||'ACTIVE').toLowerCase());
