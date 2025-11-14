@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerencia - ORANGE HEARTH</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Librerías para exportar a PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf-autotable.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <style>
+    /* Variables y Estilos Generales */
+    :root {
+      --naranja: #f28c28;
+      --naranja-oscuro: #d86f00;
+      --azul-oscuro: #2d2f56;
+      --blanco: #fff;
+      --fondo: #fff8f0;
+      --gris-claro: #f8f9fa;
+      --gris: #6c757d;
+      --verde: #28a745;
+      --azul: #007bff;
+      --rojo: #dc3545;
+      --logo-text: 'ORANGE HEARTH';
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif; /* FUENTE MEJORADA */
+      background-color: var(--fondo);
+      color: #333;
+    }
+
+    /* HEADER - FIJO */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: linear-gradient(135deg, var(--naranja), var(--naranja-oscuro));
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 15px; /* Espacio para el logo */
+    }
+
+    /* Estilo del logo (imagen) */
+    .logo-container img {
+        height: 35px; /* Altura del logo */
+        width: auto;
+        border-radius: 50%;
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.6rem; /* Ajuste para que quepa mejor el texto de bienvenida */
+      font-weight: 600;
+    }
+
+    .logout a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border: 2px solid white;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .logout a:hover {
+      background: white;
+      color: var(--naranja);
+    }
+
+    /* CONTENEDOR PRINCIPAL Y SIDEBAR */
+    .container {
+      min-height: calc(100vh - 66px); 
+      display: flex;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: linear-gradient(180deg, var(--naranja-oscuro), #b85c00);
+      padding: 2rem 1rem;
+      color: white;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 66px;
+      align-self: flex-start;
+      height: calc(100vh - 66px);
+      overflow-y: auto;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .sidebar ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar li { margin: 0.5rem 0; }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: rgba(255,255,255,0.15); 
+      transform: translateX(5px);
+    }
+    .sidebar i { font-size: 1.1rem; width: 20px; }
+
+
+    /* CONTENIDO PRINCIPAL */
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      background: var(--fondo);
+    }
+    .section {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e9ecef;
+      display: none;
+    }
+    .section.active { display: block; animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .section h3 {
+      color: var(--naranja-oscuro);
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* TARJETAS DE RESUMEN */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, var(--blanco), var(--gris-claro));
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+      border-bottom: 5px solid var(--naranja);
+      box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    /* Estilos específicos */
+    .stat-card.usuarios { border-bottom-color: var(--azul); }
+    .stat-card.mascotas { border-bottom-color: var(--verde); }
+    .stat-card.citas { border-bottom-color: var(--naranja); }
+    .stat-card.veterinarios { border-bottom-color: var(--rojo); }
+    .stat-card.clinica { border-bottom-color: var(--azul-oscuro); }
+    .stat-number { font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; }
+    .stat-label { font-size: 0.9rem; color: var(--gris); font-weight: 500; }
+    
+    /* GRÁFICOS */
+    .chart-container {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin: 1rem 0;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+      border: 1px solid #eee;
+    }
+    .chart-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    .chart-item {
+        flex: 1 1 45%;
+        min-width: 300px;
+    }
+    
+    /* FILTROS Y BUSQUEDA */
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        background: #f8f9fa; 
+        padding: 1rem; 
+        border-radius: 10px; 
+        margin-bottom: 1.5rem;
+        border: 1px solid #eee;
+    }
+    .filter-grid label {
+        display: block; 
+        margin-bottom: 0.3rem; 
+        font-weight: 600; 
+        color: #555;
+    }
+    .filter-grid input, .filter-grid select {
+        width: 100%; 
+        padding: 0.6rem; 
+        border-radius: 5px; 
+        border: 1px solid #ddd;
+    }
+    
+    /* BOTONES */
+    .btn {
+        padding: 0.7rem 1.5rem;
+        font-size: 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: var(--naranja);
+        color: white;
+    }
+
+    .btn:hover {
+        background-color: var(--naranja-oscuro);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background-color: var(--gris-claro);
+      color: var(--azul-oscuro);
+      border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+      background-color: #e9ecef;
+      color: var(--naranja-oscuro);
+    }
+    
+    /* ESTILOS DE TABLA */
+    .users-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 5px;
+        margin-top: 1rem;
+    }
+
+    .users-table th, .users-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    .users-table thead {
+        background-color: var(--azul-oscuro);
+        color: white;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    
+    .users-table tbody tr {
+        background-color: white;
+        transition: background-color 0.2s ease;
+    }
+    
+    .users-table tbody tr:hover {
+        background-color: var(--gris-claro);
+    }
+    
+    /* Badges */
+    .badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: white;
+        white-space: nowrap; 
+    }
+    .badge.tutor { background-color: var(--azul); }
+    .badge.veterinario { background-color: var(--rojo); }
+    .badge.activo { background-color: var(--verde); }
+    .badge.inactivo { background-color: var(--gris); }
+    .badge.pendiente { background-color: var(--naranja); }
+
+
+    /* Modal styles (Mantenidos) */
+    .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 2000; 
+        left: 0;
+        top: 0;
+        width: 100%; 
+        height: 100%; 
+        overflow: auto; 
+        background-color: rgba(0,0,0,0.4); 
+        padding-top: 60px;
+    }
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto; 
+        padding: 2rem;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 600px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        position: relative;
+        animation: slideIn 0.3s ease-out;
+    }
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    .close:hover,
+    .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
+    /* Mensajes de validación de formulario */
+    .validation-error {
+        color: var(--rojo);
+        font-size: 0.8rem;
+        margin-top: 5px;
+        display: block;
+        font-weight: 500;
+    }
+    .form-group input.invalid, .form-group select.invalid {
+        border-color: var(--rojo);
+        background-color: #ffebeb;
+    }
+
+    /* ************************************************* */
+    /* ESTILOS AÑADIDOS PARA REGISTRO DE VETERINARIO (Sección 7) */
+    /* ************************************************* */
+    .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .form-group-section {
+        background: var(--gris-claro);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border-left: 5px solid var(--rojo);
+    }
+
+    .form-group-section h4 {
+        margin-top: 0;
+        color: var(--rojo);
+        font-weight: 600;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: 1px dashed #ddd;
+        padding-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    /* Asegurar que los inputs dentro de los form-group se vean bien */
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 0.7rem;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Acordeón de mascotas (detalle por tutor) */
+    .accordion { border-radius: 10px; overflow: hidden; }
+    .accordion-item { border: 1px solid #eee; border-radius: 10px; margin-bottom: 8px; background:#fff; }
+    .accordion-header {
+        width: 100%; display: flex; align-items: center; justify-content: space-between;
+        padding: 12px 16px; background: #f8f9fa; border: none; cursor: pointer; font-weight: 600; color:#2d2f56;
+    }
+    .accordion-header:hover { background:#edf0f4; }
+    .accordion-content { display: none; padding: 12px 16px; border-top: 1px dashed #e3e6ea; color:#444; }
+    .accordion-item.active .accordion-content { display: block; }
+    .accordion-item.active .accordion-header i { transform: rotate(180deg); }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+        <div class="logo-white-bg">
+            <img id="logo-img" src="imagenes/LogoOrangeHearth.png" alt="Orange Hearth Logo">
+        </div>
+        <h1 id="dashboardTitle">Panel de Gerencia</h1>
+    </div>
+    <div class="logout">
+      <a href="index.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <aside class="sidebar">
+      <h2><i class="fas fa-cog"></i> Gerencia</h2>
+      <ul>
+        <li><a href="#" onclick="showSection('resumen')" class="active"><i class="fas fa-chart-pie"></i> Resumen General</a></li>
+        <li><a href="#" onclick="showSection('estadisticas')"><i class="fas fa-chart-line"></i> Estadísticas</a></li>
+        <!-- Accesos Directos eliminado por solicitud -->
+        <li><a href="#" onclick="showSection('actividades')"><i class="fas fa-history"></i> Últimas Actividades</a></li>
+        <li><a href="#" onclick="showSection('usuarios')"><i class="fas fa-users"></i> Administrar Usuarios</a></li>
+        <li><a href="#" onclick="showSection('agenda')"><i class="fas fa-calendar-alt"></i> Gestión de Citas</a></li>
+        <li><a href="#" onclick="showSection('registro-vet')"><i class="fas fa-user-md"></i> Registrar Veterinario</a></li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <section id="resumen" class="section active">
+        <h3><i class="fas fa-chart-pie"></i> Resumen Gerencial y KPIs</h3>
+        
+        <div class="stats-grid">
+          <div class="stat-card usuarios">
+            <div class="stat-number" id="totalUsuarios">0</div>
+            <div class="stat-label">Usuarios (Tutor/Vet)</div>
+          </div>
+          <div class="stat-card mascotas">
+            <div class="stat-number" id="totalMascotas">0</div>
+            <div class="stat-label">Mascotas Registradas</div>
+          </div>
+          <div class="stat-card veterinarios">
+            <div class="stat-number" id="totalVeterinarios">0</div>
+            <div class="stat-label">Veterinarios Activos</div>
+          </div>
+          <div class="stat-card citas">
+            <div class="stat-number" id="citasPendientes">0</div>
+            <div class="stat-label">Citas Pendientes</div>
+          </div>
+          <div class="stat-card clinica">
+            <div class="stat-number" id="historialesCreados">0</div>
+            <div class="stat-label">Historias Clínicas Creadas</div>
+          </div>
+          <div class="stat-card clinica" style="border-bottom-color: var(--verde);">
+            <div class="stat-number" id="mascotasAngelito">0</div>
+            <div class="stat-label">Mascotas Fallecidas😇</div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <h4>Distribución de Usuarios por Tipo</h4>
+          <canvas id="userTypeChart" width="400" height="200"></canvas>
+        </div>
+      </section>
+
+      <section id="estadisticas" class="section">
+        <h3><i class="fas fa-chart-line"></i> Estadísticas Detalladas</h3>
+        <div class="chart-grid">
+          <div class="chart-item">
+            <div class="chart-container">
+              <h4>Registros de Usuarios por Mes (Últimos 6 meses)</h4>
+              <canvas id="monthlyChart" width="400" height="300"></canvas>
+            </div>
+          </div>
+          <div class="chart-item">
+            <div class="chart-container">
+              <h4>Especies de Mascotas más Registradas</h4>
+              <canvas id="speciesChart" width="400" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <h4>Actividad del Sistema (Últimos 7 días)</h4>
+          <canvas id="activityChart" width="400" height="200"></canvas>
+        </div>
+      </section>
+      
+      <!-- Sección de Accesos Directos eliminada -->
+
+      <section id="actividades" class="section">
+        <h3><i class="fas fa-history"></i> Últimas Actividades del Sistema</h3>
+        <p>Registro en tiempo real de las acciones más recientes del sistema. <button class="btn btn-secondary" onclick="loadActivities()">Recargar</button></p>
+        <div class="activities-list" id="activitiesList">
+            </div>
+      </section>
+
+      <section id="usuarios" class="section">
+        <h3><i class="fas fa-users"></i> Administrar Usuarios</h3>
+        <p>Visualiza y gestiona todos los tutores y veterinarios registrados en el sistema.</p>
+
+        <!-- Botonera de exportación total -->
+        <div style="margin: 0 0 1rem 0; display:flex; gap:10px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" onclick="exportAllUsersCSV()"><i class="fas fa-file-excel"></i> Exportar TODOS (CSV)</button>
+          <button class="btn btn-secondary" onclick="exportAllUsersPDF()"><i class="fas fa-file-pdf"></i> Generar PDF (TODOS)</button>
+        </div>
+
+        <!-- SECCIÓN DE TUTORES -->
+        <div class="user-management-section" style="margin-bottom: 3rem;">
+            <h4 style="font-size: 1.5rem; color: var(--azul); border-bottom: 2px solid var(--azul); padding-bottom: 0.5rem; margin-bottom: 1.5rem;"><i class="fas fa-user"></i> Gestión de Tutores</h4>
+                <div class="filter-grid">
+                    <div>
+                        <label for="tutor-search-text">Buscar por Nombre o Email</label>
+                        <input type="text" id="tutor-search-text" onkeyup="filterTutores()" placeholder="Buscar tutor...">
+                    </div>
+                    <div>
+                        <label for="tutor-search-status">Filtrar por Estado</label>
+                        <select id="tutor-search-status" onchange="filterTutores()">
+                            <option value="">Todos</option>
+                            <option value="activo">Activo</option>
+                            <option value="inactivo">Inactivo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="tutor-search-doc">Documento</label>
+                        <input type="text" id="tutor-search-doc" onkeyup="filterTutores()" placeholder="Ej: 1020304050">
+                    </div>
+                    <div>
+                        <label for="tutor-search-minpets">Mín. Mascotas</label>
+                        <input type="number" id="tutor-search-minpets" min="0" value="" oninput="filterTutores()" placeholder="0">
+                    </div>
+                    <div>
+                        <label for="tutor-search-species">Especie</label>
+                        <select id="tutor-search-species" onchange="filterTutores()">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                </div>
+            <div style="margin-bottom: 1rem; display: flex; gap: 10px;">
+                <button class="btn" onclick="cargarTablaTutores()"><i class="fas fa-sync"></i> Actualizar</button>
+                <button class="btn btn-secondary" onclick="exportToCSV('tutorsTable', 'Reporte_Tutores')"><i class="fas fa-file-excel"></i> Exportar a CSV</button>
+                <button class="btn btn-secondary" onclick="exportToPDF('tutorsTable', 'Reporte de Tutores')"><i class="fas fa-file-pdf"></i> Generar PDF</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="users-table" id="tutorsTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Mascotas</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tutorsTableBody">
+                        <!-- Contenido dinámico para tutores -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE VETERINARIOS -->
+        <div class="user-management-section">
+            <h4 style="font-size: 1.5rem; color: var(--rojo); border-bottom: 2px solid var(--rojo); padding-bottom: 0.5rem; margin-bottom: 1.5rem;"><i class="fas fa-user-md"></i> Gestión de Veterinarios</h4>
+            <div class="filter-grid">
+                <div>
+                    <label for="vet-search-text">Buscar por Nombre, Email o Especialidad</label>
+                    <input type="text" id="vet-search-text" onkeyup="filterVeterinarios()" placeholder="Buscar veterinario...">
+                </div>
+                <div>
+                    <label for="vet-search-status">Filtrar por Estado</label>
+                    <select id="vet-search-status" onchange="filterVeterinarios()">
+                        <option value="">Todos</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                        <option value="pendiente">Pendiente</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-bottom: 1rem; display: flex; gap: 10px;">
+                <button class="btn" onclick="cargarTablaVeterinarios()"><i class="fas fa-sync"></i> Actualizar</button>
+                <button class="btn btn-secondary" onclick="exportToCSV('vetsTable', 'Reporte_Veterinarios')"><i class="fas fa-file-excel"></i> Exportar a CSV</button>
+                <button class="btn btn-secondary" onclick="exportToPDF('vetsTable', 'Reporte de Veterinarios')"><i class="fas fa-file-pdf"></i> Generar PDF</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="users-table" id="vetsTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Especialidad</th>
+                            <th>T. Profesional</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vetsTableBody">
+                        <!-- Contenido dinámico para veterinarios -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+      </section>
+
+      <section id="agenda" class="section">
+        <h3><i class="fas fa-calendar-alt"></i> Gestión de Citas del Sistema</h3>
+        <p>Visualiza y gestiona todas las citas agendadas en el sistema.</p>
+
+        <div class="filter-grid">
+            <div>
+                <label for="filtro-tutor">ID/Email del Tutor</label>
+                <input type="text" id="filtro-tutor" onkeyup="filterCitasList()" placeholder="Buscar por email del tutor">
+            </div>
+            <div>
+                <label for="filtro-estado-cita">Estado de la Cita</label>
+                <select id="filtro-estado-cita" onchange="filterCitasList()">
+                    <option value="">Todos los Estados</option>
+                    <option value="programada">Programada</option>
+                    <option value="confirmada">Confirmada</option>
+                    <option value="completada">Completada</option>
+                    <option value="cancelada">Cancelada</option>
+                </select>
+            </div>
+            <div>
+                <label for="filtro-veterinario">Veterinario</label>
+                <select id="filtro-veterinario" onchange="filterCitasList()">
+                    <option value="">Todos los Veterinarios</option>
+                    </select>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+          <button class="btn" onclick="cargarCitasList()">
+            <i class="fas fa-sync"></i> Actualizar Citas
+          </button>
+          <button class="btn btn-secondary" onclick="exportToExcel('citasTable', 'Reporte_Citas')">
+            <i class="fas fa-file-excel"></i> Exportar Excel
+          </button>
+          <button class="btn btn-secondary" onclick="exportToPDF('citasTable', 'Reporte_Citas')">
+            <i class="fas fa-file-pdf"></i> Generar PDF
+          </button>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table class="users-table" id="citasTable">
+              <thead>
+                <tr>
+                  <th>ID Cita</th>
+                  <th>Tutor</th>
+                  <th>Mascota</th>
+                  <th>Veterinario</th>
+                  <th>Fecha/Hora</th>
+                  <th>Motivo</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="citasTableBody">
+                </tbody>
+            </table>
+        </div>
+      </section>
+      
+      <section id="registro-vet" class="section">
+        <h3><i class="fas fa-user-md"></i> Registrar Nuevo Veterinario</h3>
+        <p>Complete el formulario con la información del nuevo profesional.</p>
+        
+        <form id="form-registro-vet" onsubmit="return handleRegistrarVeterinario(event)">
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                
+                <div class="form-group-section">
+                    <h4><i class="fas fa-address-card"></i> Información Personal y Contacto</h4>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="vet-nombre">Nombre Completo</label>
+                            <input type="text" id="vet-nombre" name="nombre" required placeholder="Ej: Dr. Juan Pérez" oninput="validateField(this)">
+                            <span class="validation-error" id="error-vet-nombre"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="vet-telefono">Teléfono</label>
+                            <input type="tel" id="vet-telefono" name="telefono" required placeholder="+57 3xx xxx xxxx" oninput="validateField(this)">
+                            <span class="validation-error" id="error-vet-telefono"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="vet-doc-tipo">Tipo de Documento</label>
+                            <select id="vet-doc-tipo" name="doc_tipo" required onchange="validateField(this)">
+                                <option value="">-- Seleccione --</option>
+                                <option value="CC">Cédula de Ciudadanía (CC)</option>
+                                <option value="CE">Cédula de Extranjería (CE)</option>
+                                <option value="PA">Pasaporte (PA)</option>
+                            </select>
+                            <span class="validation-error" id="error-vet-doc-tipo"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="vet-doc-numero">Número de Documento</label>
+                            <input type="text" id="vet-doc-numero" name="doc_numero" required placeholder="Ej: 1020304050" oninput="validateField(this)">
+                            <span class="validation-error" id="error-vet-doc-numero"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group-section">
+                    <h4><i class="fas fa-briefcase-medical"></i> Datos Profesionales</h4>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="vet-tarjeta">Tarjeta Profesional (TP######)</label>
+                            <input type="text" id="vet-tarjeta" name="tarjeta_profesional" required placeholder="Ej: TP123456" oninput="validateField(this)">
+                            <span class="validation-error" id="error-vet-tarjeta"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="vet-especialidad">Especialidad</label>
+                            <select id="vet-especialidad" name="especialidad" required onchange="validateField(this)">
+                                <option value="">-- Seleccione --</option>
+                                <option value="Medicina General">Medicina General</option>
+                                <option value="Cirugía">Cirugía</option>
+                                <option value="Dermatología">Dermatología</option>
+                                <option value="Odontología">Odontología</option>
+                                <option value="Cardiología">Cardiología</option>
+                                <option value="Ortopedia">Ortopedia</option>
+                                <option value="Emergencias">Emergencias</option>
+                            </select>
+                            <span class="validation-error" id="error-vet-especialidad"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group-section">
+                    <h4><i class="fas fa-lock"></i> Creación de Acceso</h4>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="vet-correo">Correo Electrónico</label>
+                            <input type="email" id="vet-correo" name="correo" required placeholder="correo@ejemplo.com" oninput="validateField(this)">
+                            <span class="validation-error" id="error-vet-correo"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="vet-password">Contraseña (Mín. 8, Mayús, Minús, Núm, Símbolo)</label>
+                            <input type="password" id="vet-password" name="password" required placeholder="Contraseña segura" oninput="validateField(this)">
+                            <span class="validation-error" id="error-vet-password"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%; margin-top: 2rem;">
+                <i class="fas fa-user-plus"></i> Registrar Veterinario
+            </button>
+            
+            <div id="vet-message" style="margin-top: 1rem; font-weight: 600;"></div>
+        </form>
+      </section>
+      
+      <section id="configuracion" class="section">
+        <h3><i class="fas fa-cog"></i> Configuración General del Sistema</h3>
+        <p>Módulo de configuración en desarrollo.</p>
+      </section>
+
+    </main>
+  </div>
+  
+  <div id="modificationModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('modificationModal')">&times;</span>
+      <h3><i class="fas fa-edit"></i> Modificar Información de Usuario</h3>
+      <form id="form-modificar-usuario" onsubmit="return handleUpdateUser(event)">
+        <input type="hidden" id="modal-user-index">
+        <input type="hidden" id="modal-user-type">
+        
+        <div id="modal-user-fields">
+          <div class="form-group">
+              <label for="modal-nombre">Nombre Completo</label>
+              <input type="text" id="modal-nombre" required>
+          </div>
+          <div class="form-group">
+              <label for="modal-email">Correo Electrónico (No modificable)</label>
+              <input type="email" id="modal-email" disabled>
+          </div>
+          <div class="form-group">
+              <label for="modal-telefono">Teléfono</label>
+              <input type="tel" id="modal-telefono" required>
+          </div>
+          <!-- Campos de Documento -->
+          <div class="form-group">
+              <label for="modal-doc-tipo">Tipo de Documento</label>
+              <select id="modal-doc-tipo" required>
+                  <option value="CC">Cédula de Ciudadanía</option>
+                  <option value="CE">Cédula de Extranjería</option>
+                  <option value="PA">Pasaporte</option>
+                  <option value="TI">Tarjeta de Identidad</option>
+              </select>
+          </div>
+          <div class="form-group">
+              <label for="modal-doc-numero">Número de Documento</label>
+              <input type="text" id="modal-doc-numero" required>
+          </div>
+          <!-- Fin de Campos de Documento -->
+
+          <div class="form-group" id="modal-direccion-group" style="display: none;">
+              <label for="modal-direccion">Dirección</label>
+              <input type="text" id="modal-direccion">
+          </div>
+
+          <div class="form-group" id="modal-estado-group">
+              <label for="modal-estado">Estado de la Cuenta</label>
+              <select id="modal-estado" required>
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                  <option value="pendiente">Pendiente</option>
+              </select>
+          </div>
+        </div>
+        
+        <div id="modal-vet-fields" style="display: none;">
+             <h4><i class="fas fa-user-md"></i> Datos de Veterinario</h4>
+             <div class="form-group">
+                 <label for="modal-vet-tarjeta">Tarjeta Profesional</label>
+                 <input type="text" id="modal-vet-tarjeta" name="tarjeta_profesional">
+             </div>
+             <div class="form-group">
+                 <label for="modal-vet-especialidad">Especialidad</label>
+                 <select id="modal-vet-especialidad" name="especialidad">
+                      </select>
+             </div>
+        </div>
+        
+        <div id="modal-tutor-fields" style="display: none;">
+             <h4><i class="fas fa-paw"></i> Gestión de Mascotas</h4>
+             <div id="modal-mascotas-list">
+                 </div>
+             
+        </div>
+        
+        <button type="submit" class="btn" style="width: 100%; margin-top: 1.5rem;">
+            <i class="fas fa-save"></i> Guardar Cambios
+        </button>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    // =========================================================
+    //                      MOCK DATA SETUP & CONSTANTES
+    // =========================================================
+    const ES_SPECIALTIES = [
+        "Medicina General", "Cirugía", "Dermatología", "Odontología", 
+        "Cardiología", "Ortopedia", "Oftalmología", "Emergencias", "Ortopedia", "Neurología", "Oncología", "Anestesiología", "Radiología", "Nefrología"
+    ];
+
+    // function setupMockData() {
+    //   // 1. Mock de Tutores
+    //   if (!localStorage.getItem('registrosUsuarios')) {
+    //     const tutoresEjemplo = [
+    //       { index: 0, nombre: 'Andres Garcia', correo: 'andres@tutor.com', telefono: '3001112233', tipo: 'tutor', estado: 'activo', doc_tipo: 'CC', doc_numero: '100123456' },
+    //       { index: 1, nombre: 'Laura Martinez', correo: 'laura@tutor.com', telefono: '3004445566', tipo: 'tutor', estado: 'activo', doc_tipo: 'CE', doc_numero: '900654321' },
+    //       { index: 2, nombre: 'Carlos Rodríguez', correo: 'carlos@tutor.com', telefono: '3109876543', tipo: 'tutor', estado: 'inactivo', doc_tipo: 'CC', doc_numero: '109876543' }
+    //     ];
+    //     localStorage.setItem('registrosUsuarios', JSON.stringify(tutoresEjemplo));
+    //   }
+      
+    //   // 2. Mock de Mascotas (con status 'activo' o 'angelito')
+    //   if (!localStorage.getItem('mascotas_andres@tutor.com')) {
+    //       localStorage.setItem('mascotas_andres@tutor.com', JSON.stringify([
+    //           { id: 1, nombre: 'Max', especie: 'Perro', estado_mascota: 'activo' }, 
+    //           { id: 2, nombre: 'Luna', especie: 'Gato', estado_mascota: 'angelito' } // Ejemplo de mascota fallecida
+    //       ]));
+    //   }
+    //   if (!localStorage.getItem('mascotas_laura@tutor.com')) {
+    //       localStorage.setItem('mascotas_laura@tutor.com', JSON.stringify([
+    //           { id: 3, nombre: 'Coco', especie: 'Ave', estado_mascota: 'activo' }
+    //       ]));
+    //   }
+    //   if (!localStorage.getItem('adminUser')) {
+    //     // Se establece el usuario de ejemplo "Armando Mendoza"
+    //     localStorage.setItem('adminUser', JSON.stringify({ nombre: 'Armando Mendoza', rol: 'Gerente' }));
+    //   }
+      
+    //   // 3. Mock de Veterinarios
+    //   if (!localStorage.getItem('veterinarios')) {
+    //     const veterinariosEjemplo = [
+    //       { index: 0, nombre: 'Dr. Juan Pérez', correo: 'juan.perez@orangehearth.com', especialidad: 'Medicina General', tarjeta_profesional: 'TP123456', telefono: '+57 310 123 4567', estado: 'activo', tipo: 'veterinario', doc_tipo: 'CC', doc_numero: '102938475' },
+    //       { index: 1, nombre: 'Dra. Carmen Silva', correo: 'carmen.silva@orangehearth.com', especialidad: 'Cirugía', tarjeta_profesional: 'TP789012', telefono: '+57 311 234 5678', estado: 'activo', tipo: 'veterinario', doc_tipo: 'CE', doc_numero: '202938475' },
+    //       { index: 2, nombre: 'Dr. Hector Torres', correo: 'hector@orangehearth.com', especialidad: 'Odontología', tarjeta_profesional: 'TP555555', telefono: '+57 312 345 6789', estado: 'pendiente', tipo: 'veterinario', doc_tipo: 'CC', doc_numero: '102938476' }
+    //     ];
+    //     localStorage.setItem('veterinarios', JSON.stringify(veterinariosEjemplo));
+    //   }
+      
+    //   // 4. Mock de Citas (Con ID de Tutor para búsqueda)
+    //   if (!localStorage.getItem('citas')) {
+    //       const citasEjemplo = [
+    //           { id: 'C001', tutorEmail: 'andres@tutor.com', mascota: 'Max', fecha: '2025-10-25', hora: '10:00', motivo: 'Chequeo General', estado: 'programada', veterinario: 'Dr. Juan Pérez' },
+    //           { id: 'C002', tutorEmail: 'laura@tutor.com', mascota: 'Coco', fecha: '2025-10-25', hora: '14:30', motivo: 'Vacunación', estado: 'confirmada', veterinario: 'Dra. Carmen Silva' },
+    //           { id: 'C003', tutorEmail: 'andres@tutor.com', mascota: 'Luna', fecha: '2025-10-26', hora: '16:00', motivo: 'Revision Ocular', estado: 'completada', veterinario: 'Dr. Juan Pérez' },
+    //           { id: 'C004', tutorEmail: 'carlos@tutor.com', mascota: 'Otro', fecha: '2025-10-27', hora: '09:00', motivo: 'Consulta', estado: 'cancelada', veterinario: 'Dra. Carmen Silva' },
+    //       ];
+    //       localStorage.setItem('citas', JSON.stringify(citasEjemplo));
+    //   }
+      
+    //   // 5. Mock de Actividades (Activity Log)
+    //   if (!localStorage.getItem('activityLog')) {
+    //       localStorage.setItem('activityLog', JSON.stringify([
+    //           { time: Date.now() - 3600000, type: 'registro', description: 'Tutor: Andres Garcia registrado.', user: 'tutor' },
+    //           { time: Date.now() - 7200000, type: 'cita', description: 'Cita C002 agendada para Coco.', user: 'tutor' }
+    //       ]));
+    //   }
+    // }
+
+    // =========================================================
+    //                      VARIABLES GLOBALES PARA GRÁFICOS
+    // =========================================================
+    // let userTypeChartInstance, monthlyChartInstance, speciesChartInstance, activityChartInstance;
+    // let allUsersCache = []; // Cache para la tabla de usuarios (mock)
+    // // Caches de datos reales (legacy) para filtros en memoria
+    // let legacyTutoresCache = [];
+    // let legacyVetsCache = [];
+
+    // =========================================================
+    //                      SECCIÓN PRINCIPAL / INICIALIZACIÓN
+    // =========================================================
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // 2. Cargar datos iniciales en la vista
+      displayAdminWelcome();
+      cargarResumenGeneral();
+      // 3. Cargar datos de tablas y actividades (se reemplaza cargarTablaUsuarios)
+      cargarTablaTutores();
+      cargarTablaVeterinarios();
+      cargarCitasList();
+      loadActivities();
+      populateVetSpecialties();
+      // 4. Renderizar gráficos (Se hará al cargar la sección 'estadisticas' para asegurar el tamaño)
+      // Lo llamamos una vez aquí para el gráfico de "resumen"
+    //   renderUserTypeChart();
+    });
+
+    // Función para manejar clics en el sidebar (ACCESIBLE GLOBALMENTE)
+    function showSection(sectionId) {
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      const targetSection = document.getElementById(sectionId);
+      if (targetSection) {
+        targetSection.classList.add('active');
+        
+        // Lógica para re-cargar/actualizar si es necesario al hacer visible
+        if (sectionId === 'estadisticas') {
+             // Re-renderizar todos los gráficos detallados para asegurar dimensiones correctas
+             renderCharts();
+        }
+        if (sectionId === 'usuarios') {
+             cargarTablaTutores(); // Refrescar la tabla de tutores
+             cargarTablaVeterinarios(); // Refrescar la tabla de veterinarios
+        }
+        if (sectionId === 'agenda') {
+             cargarCitasList(); // Refrescar la lista de citas
+        }
+      }
+      
+      document.querySelectorAll('.sidebar a').forEach(link => link.classList.remove('active'));
+      const activeLink = document.querySelector(`.sidebar a[onclick*="${sectionId}"]`);
+      if (activeLink) {
+        activeLink.classList.add('active');
+      }
+    }
+
+    // =====================
+    // Tabla de Tutores
+    // =====================
+    async function cargarTablaTutores(filtered = null) {
+        const tbody = document.getElementById('tutorsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="6">Cargando...</td></tr>';
+        try {
+            const token = localStorage.getItem('adminSessionToken');
+            const resp = await fetch('/api/admin/legacy/tutores', { headers: { 'X-ADMIN-TOKEN': (token||'').replace(/"/g,'') } });
+            const lista = await resp.json();
+            let data = Array.isArray(lista) ? lista : [];
+            legacyTutoresCache = data;
+            // Popular especies únicas en el filtro
+            try {
+              const speciesSelect = document.getElementById('tutor-search-species');
+              if (speciesSelect) {
+                const especies = Array.from(new Set((data||[]).flatMap(t => (t.mascotas||[]).map(m => (m.especie||'').trim())).filter(Boolean))).sort();
+                const current = speciesSelect.value;
+                speciesSelect.innerHTML = '<option value="">Todas</option>' + especies.map(e => `<option value="${e}">${e}</option>`).join('');
+                if (current && Array.from(speciesSelect.options).some(o => o.value === current)) speciesSelect.value = current;
+              }
+            } catch (e) { /* ignore UI errors */ }
+            if (filtered) data = filtered;
+            tbody.innerHTML = '';
+            data.forEach(t => {
+                const tr = document.createElement('tr');
+                const estado = (t.estado||'ACTIVE').toUpperCase();
+                const estadoClass = estado==='INACTIVE' ? 'inactivo' : (estado==='PENDING' ? 'pendiente' : 'activo');
+                const mascotaNombres = (t.mascotas||[]).map(m=>m.nombre).join(', ');
+                tr.innerHTML = `
+                  <td data-label="Nombre">${t.nombreCompleto || ''}</td>
+                  <td data-label="Email">${t.correo || ''}</td>
+                  <td data-label="Teléfono">${t.telefono || ''}</td>
+                  <td data-label="Mascotas">${(t.mascotas||[]).length}${mascotaNombres? ` - ${mascotaNombres}`:''}</td>
+                  <td data-label="Estado"><span class="badge ${estadoClass}">${estado}</span></td>
+                  <td data-label="Acciones">
+                    <button class="btn btn-secondary" onclick="openModificationModal('tutor', ${t.id})"><i class="fas fa-edit"></i> Modificar</button>
+                  </td>`;
+                tbody.appendChild(tr);
+            });
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No se encontraron tutores.</td></tr>';
+            }
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc3545;">No se pudo cargar la lista de tutores.</td></tr>';
+        }
+    }
+
+    function filterTutores() {
+        const text = (document.getElementById('tutor-search-text')?.value || '').toLowerCase();
+        const estado = (document.getElementById('tutor-search-status')?.value || '').toLowerCase();
+        const doc = (document.getElementById('tutor-search-doc')?.value || '').toLowerCase();
+        const minPetsRaw = document.getElementById('tutor-search-minpets')?.value || '';
+        const minPets = minPetsRaw === '' ? null : parseInt(minPetsRaw, 10);
+        const species = (document.getElementById('tutor-search-species')?.value || '').toLowerCase();
+        // Si no hay ningún criterio, recargar completo
+        if (!text && !estado && !doc && (minPets===null) && !species) { cargarTablaTutores(); return; }
+        const source = Array.isArray(legacyTutoresCache) ? legacyTutoresCache : [];
+        const filtered = source.filter(t => {
+            const nombre = (t.nombreCompleto||'').toLowerCase();
+            const correo = (t.correo||'').toLowerCase();
+            const telefono = (t.telefono||'').toLowerCase();
+            const documento = (t.documento||'').toLowerCase();
+            const mascotas = Array.isArray(t.mascotas) ? t.mascotas : [];
+            const countMasc = mascotas.length;
+            const especiesTutor = new Set(mascotas.map(m => (m.especie||'').toLowerCase()));
+            const matchText = !text || nombre.includes(text) || correo.includes(text) || telefono.includes(text);
+            const matchEstado = !estado || estado === 'activo'; // tutores sin estado en legado
+            const matchDoc = !doc || documento.includes(doc);
+            const matchCount = (minPets===null) || (countMasc >= minPets);
+            const matchSpecies = !species || especiesTutor.has(species);
+            return matchText && matchEstado && matchDoc && matchCount && matchSpecies;
+        });
+        cargarTablaTutores(filtered);
+    }
+
+    // =====================
+    // Tabla de Veterinarios
+    // =====================
+    async function cargarTablaVeterinarios(filtered = null) {
+        const tbody = document.getElementById('vetsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="6">Cargando...</td></tr>';
+        const token = localStorage.getItem('adminSessionToken');
+        if (!token) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Inicia sesión como Gerente.</td></tr>'; return; }
+        try {
+            // 1) Intentar dominio actual
+            let resp = await fetch('/api/admin/veterinarios', { headers: { 'X-ADMIN-TOKEN': token.replace(/"/g,'') } });
+            let lista = await resp.json().catch(()=>[]);
+            let data = Array.isArray(lista) ? lista : [];
+            // 2) Si no hay resultados, usar legacy
+            if (!data.length) {
+                resp = await fetch('/api/admin/legacy/veterinarios', { headers: { 'X-ADMIN-TOKEN': token.replace(/"/g,'') } });
+                lista = await resp.json().catch(()=>[]);
+                data = Array.isArray(lista) ? lista : [];
+            }
+            legacyVetsCache = data;
+            if (filtered) data = filtered;
+            tbody.innerHTML = '';
+            data.forEach(v => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                  <td data-label="Nombre">${v.nombreCompleto||v.nombre||''}</td>
+                  <td data-label="Email">${v.correo||v.email||''}</td>
+                  <td data-label="Especialidad">${v.especialidad||'N/A'}</td>
+                  <td data-label="Tarjeta">${v.tarjetaProfesional||v.professionalLicense||''}</td>
+                  <td data-label="Estado"><span class="badge ${(v.estado||v.status)==='INACTIVE'?'inactivo':((v.estado||v.status)==='PENDING'?'pendiente':'activo')}">${(v.estado||v.status)||'ACTIVE'}</span></td>
+                  <td data-label="Acciones"><button class="btn btn-secondary" onclick="openModificationModal('veterinario', ${v.id})"><i class="fas fa-edit"></i> Modificar</button></td>`;
+                tbody.appendChild(tr);
+            });
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No se encontraron veterinarios.</td></tr>';
+            }
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc3545;">No se pudo cargar la lista de veterinarios.</td></tr>';
+        }
+    }
+    
+    function filterVeterinarios() {
+        const text = (document.getElementById('vet-search-text')?.value || '').toLowerCase();
+        const estadoSel = (document.getElementById('vet-search-status')?.value || '').toLowerCase();
+        if (!text && !estadoSel) { cargarTablaVeterinarios(); return; }
+        const source = Array.isArray(legacyVetsCache) ? legacyVetsCache : [];
+        const filtered = source.filter(v => {
+            const nombre = (v.nombreCompleto||'').toLowerCase();
+            const correo = (v.correo||'').toLowerCase();
+            const especialidad = (v.especialidad||'').toLowerCase();
+            const tarjeta = (v.tarjetaProfesional||'').toLowerCase();
+            const estado = (v.estado||'ACTIVE').toLowerCase();
+            const matchText = !text || nombre.includes(text) || correo.includes(text) || especialidad.includes(text) || tarjeta.includes(text);
+            const matchEstado = !estadoSel || estado === estadoSel;
+            return matchText && matchEstado;
+        });
+        cargarTablaVeterinarios(filtered);
+    }
+    
+    // Función para mostrar el mensaje de bienvenida con el logo
+    function displayAdminWelcome() {
+        const adminData = JSON.parse(localStorage.getItem('adminUser')) || { 
+            nombre: 'Administrador', 
+            rol: 'Gerente' 
+        };
+        const headerTitleElement = document.getElementById('dashboardTitle');
+        if (headerTitleElement) {
+            // Se actualiza el texto de bienvenida
+            headerTitleElement.textContent = `Bienvenido ${adminData.nombre} - Panel de ${adminData.rol}`;
+        }
+    }
+
+    // =========================================================
+    //                      LÓGICA DE ACTIVIDADES (Sección 4)
+    // =========================================================
+    function addActivity(type, description, user, time = Date.now()) {
+        const newActivity = { time, type, description, user };
+        let log = JSON.parse(localStorage.getItem('activityLog')) || [];
+        log.unshift(newActivity); // Agrega al principio
+        if (log.length > 20) log.pop(); // Mantiene un máximo de 20 entradas
+        localStorage.setItem('activityLog', JSON.stringify(log));
+        loadActivities();
+        return newActivity;
+    }
+
+    function loadActivities() {
+        const list = document.getElementById('activitiesList');
+        const log = JSON.parse(localStorage.getItem('activityLog')) || [];
+        list.innerHTML = '';
+
+        log.forEach(activity => {
+            let icon, color;
+            
+            switch (activity.type) {
+                case 'registro': icon = 'fas fa-user-plus'; color = 'var(--azul)'; break;
+                case 'veterinario': icon = 'fas fa-user-md'; color = 'var(--rojo)'; break;
+                case 'mascota': icon = 'fas fa-paw'; color = 'var(--verde)'; break;
+                case 'cita': icon = 'fas fa-calendar-alt'; color = 'var(--naranja)'; break;
+                case 'historia': icon = 'fas fa-file-medical'; color = 'var(--azul-oscuro)'; break;
+                case 'modificacion': icon = 'fas fa-edit'; color = 'var(--gris)'; break;
+                default: icon = 'fas fa-info-circle'; color = '#333';
+            }
+            
+            const timeAgo = formatTimeAgo(activity.time);
+
+            list.innerHTML += `
+                <div class="activity-item" style="border-left-color: ${color};">
+                    <div class="activity-icon" style="background: ${color};"><i class="${icon}"></i></div>
+                    <div class="activity-content">
+                        <div class="activity-title">${activity.description}</div>
+                        <div class="activity-time">${timeAgo}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        if (log.length === 0) {
+            list.innerHTML = '<p style="text-align: center; color: #999;">No hay actividades recientes registradas.</p>';
+        }
+    }
+
+    function formatTimeAgo(timestamp) {
+        const seconds = Math.floor((Date.now() - timestamp) / 1000);
+        let interval = Math.floor(seconds / 31536000);
+        if (interval >= 1) return `hace ${interval} año${interval > 1 ? 's' : ''}`;
+        interval = Math.floor(seconds / 2592000);
+        if (interval >= 1) return `hace ${interval} mes${interval > 1 ? 'es' : ''}`;
+        interval = Math.floor(seconds / 86400);
+        if (interval >= 1) return `hace ${interval} día${interval > 1 ? 's' : ''}`;
+        interval = Math.floor(seconds / 3600);
+        if (interval >= 1) return `hace ${interval} hora${interval > 1 ? 's' : ''}`;
+        interval = Math.floor(seconds / 60);
+        if (interval >= 1) return `hace ${interval} minuto${interval > 1 ? 's' : ''}`;
+        return 'hace unos segundos';
+    }
+
+
+    // =========================================================
+    //                      RESUMEN GENERAL (Sección 1)
+    // =========================================================
+    function cargarResumenGeneral() {
+        const tutores = JSON.parse(localStorage.getItem('registrosUsuarios')) || [];
+        const veterinarios = JSON.parse(localStorage.getItem('veterinarios')) || [];
+        const citas = JSON.parse(localStorage.getItem('citas')) || [];
+        
+        const totalUsuarios = tutores.length + veterinarios.length;
+        document.getElementById('totalUsuarios').textContent = totalUsuarios;
+        
+        let totalMascotas = 0;
+        let mascotasAngelito = 0;
+        tutores.forEach(tutor => {
+            const mascotas = JSON.parse(localStorage.getItem(`mascotas_${tutor.correo}`)) || [];
+            totalMascotas += mascotas.length;
+            mascotasAngelito += mascotas.filter(m => m.estado_mascota === 'angelito').length;
+        });
+        
+        document.getElementById('totalMascotas').textContent = totalMascotas;
+        document.getElementById('mascotasAngelito').textContent = mascotasAngelito;
+        
+        const vetsActivos = veterinarios.filter(v => v.estado === 'activo').length;
+        document.getElementById('totalVeterinarios').textContent = vetsActivos;
+        
+        const citasPendientes = citas.filter(c => c.estado === 'programada' || c.estado === 'confirmada').length;
+        document.getElementById('citasPendientes').textContent = citasPendientes;
+        
+        // Mock data para Historiales
+        document.getElementById('historialesCreados').textContent = citas.filter(c => c.estado === 'completada').length + 5;
+    }
+    
+    // =========================================================
+    //                      ADMINISTRAR USUARIOS (Sección 5)
+    // =========================================================
+
+    function getAllUsers() {
+        const tutores = JSON.parse(localStorage.getItem('registrosUsuarios')) || [];
+        const veterinarios = JSON.parse(localStorage.getItem('veterinarios')) || [];
+        
+        // Map y agregar índice (necesario para la edición)
+        const tutoresWithDetails = tutores.map((u, index) => {
+            const mascotas = JSON.parse(localStorage.getItem(`mascotas_${u.correo}`)) || [];
+            const mascotasActivas = mascotas.filter(m => m.estado_mascota === 'activo').length;
+            const detalle = mascotasActivas === 1 
+                ? `${mascotasActivas} mascota` 
+                : `${mascotasActivas} mascotas`;
+            return {...u, tipo: 'tutor', detalle, index};
+        });
+        
+        const vetsWithDetails = veterinarios.map((u, index) => {
+            return {...u, tipo: 'veterinario', detalle: u.especialidad, index};
+        });
+        
+        allUsersCache = [...tutoresWithDetails, ...vetsWithDetails];
+        return allUsersCache;
+    }
+
+    function cargarTablaUsuarios(filteredUsers = null) {
+        const tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = ''; 
+
+        const usersToDisplay = filteredUsers || getAllUsers();
+
+        usersToDisplay.forEach(user => {
+            const row = tbody.insertRow();
+            
+            const badgeClass = user.tipo === 'tutor' ? 'tutor' : 'veterinario';
+            const estadoClass = user.estado === 'activo' ? 'activo' : (user.estado === 'inactivo' ? 'inactivo' : 'pendiente');
+            const estadoTexto = user.estado.charAt(0).toUpperCase() + user.estado.slice(1);
+            
+            row.innerHTML = `
+                <td data-label="Nombre">${user.nombre}</td>
+                <td data-label="Email">${user.correo}</td>
+                <td data-label="Tipo"><span class="badge ${badgeClass}">${user.tipo.charAt(0).toUpperCase() + user.tipo.slice(1)}</span></td>
+                <td data-label="Mascotas/Especialidad">${user.detalle || 'N/A'}</td>
+                <td data-label="Estado"><span class="badge ${estadoClass}">${estadoTexto}</span></td>
+                <td data-label="Acciones">
+                    <button class="btn btn-secondary" style="padding: 0.5rem 1rem;" 
+                            onclick="openModificationModal('${user.tipo}', ${user.index})">
+                        <i class="fas fa-edit"></i> Modificar
+                    </button>
+                </td>
+            `;
+        });
+        if (usersToDisplay.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No se encontraron usuarios.</td></tr>';
+        }
+    }
+    
+    function filterUsersTable() {
+        const searchText = document.getElementById('search-text').value.toLowerCase();
+        const searchType = document.getElementById('search-type').value;
+        const searchStatus = document.getElementById('search-status').value;
+
+        if (allUsersCache.length === 0) getAllUsers(); 
+        
+        const filtered = allUsersCache.filter(user => {
+            const textMatch = user.nombre.toLowerCase().includes(searchText) ||
+                              user.correo.toLowerCase().includes(searchText) ||
+                              (user.detalle && user.detalle.toLowerCase().includes(searchText));
+            
+            const typeMatch = searchType === '' || user.tipo === searchType;
+            
+            const statusMatch = searchStatus === '' || user.estado === searchStatus;
+            
+            return textMatch && typeMatch && statusMatch;
+        });
+        
+        cargarTablaUsuarios(filtered);
+    }
+    
+    // Exportación real en cliente (CSV/PDF) basada en tabla visible o datasets cacheados
+    function exportToCSV(tableId, filename) {
+        const table = document.getElementById(tableId);
+        if (!table) { alert('Tabla no encontrada'); return; }
+        let csv = '';
+        const rows = table.querySelectorAll('tr');
+        rows.forEach((row) => {
+            const cols = Array.from(row.querySelectorAll('th, td'));
+            if (!cols.length) return;
+            const trimmed = cols.slice(0, -1); // excluir columna Acciones
+            const values = trimmed.map(c => '"' + (c.innerText || '').replace(/"/g,'""') + '"');
+            if (values.length) csv += values.join(',') + '\n';
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename + '.csv'; a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function exportToPDF(tableId, title) {
+        const table = document.getElementById(tableId);
+        if (!table) { alert('Tabla no encontrada'); return; }
+        const clone = table.cloneNode(true);
+        clone.querySelectorAll('tr').forEach(tr => { if (tr.lastElementChild) tr.removeChild(tr.lastElementChild); });
+        const w = window.open('', '_blank');
+        w.document.write('<html><head><title>'+ (title||'Reporte') +'</title>');
+        w.document.write('<style>body{font-family:Arial,Helvetica,sans-serif;padding:20px} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ddd;padding:8px;font-size:12px} th{background:#f3f3f3}</style>');
+        w.document.write('</head><body>');
+        w.document.write('<h3>'+ (title||'Reporte') +'</h3>');
+        w.document.write(clone.outerHTML);
+        w.document.write('</body></html>');
+        w.document.close();
+        w.focus();
+        w.print();
+    }
+
+    async function exportAllUsersCSV() {
+        try {
+          const token = (localStorage.getItem('adminSessionToken')||'').replace(/\"/g,'');
+          if (!token) { alert('Debes iniciar sesión como Gerente para cambiar el estado del tutor.'); return false; }
+            // Asegurar data en cache
+            if (!legacyTutoresCache.length) {
+                const rt = await fetch('/api/admin/legacy/tutores', { headers: { 'X-ADMIN-TOKEN': token } });
+                legacyTutoresCache = await rt.json();
+            }
+            if (!legacyVetsCache.length) {
+                const rv = await fetch('/api/admin/legacy/veterinarios', { headers: { 'X-ADMIN-TOKEN': token } });
+                legacyVetsCache = await rv.json();
+            }
+            const rows = [];
+            rows.push(['Tipo','Nombre','Email','Teléfono','Especialidad','Tarjeta','Mascotas','Estado']);
+            (legacyTutoresCache||[]).forEach(t => rows.push(['Tutor', t.nombreCompleto||'', t.correo||'', t.telefono||'', '', '', (t.mascotas||[]).length||0, 'ACTIVO']));
+            (legacyVetsCache||[]).forEach(v => rows.push(['Veterinario', v.nombreCompleto||'', v.correo||'', v.telefono||'', v.especialidad||'', v.tarjetaProfesional||'', '', (v.estado||'ACTIVE')]));
+            const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'Usuarios_Clinica.csv'; a.click();
+            URL.revokeObjectURL(url);
+        } catch (e) { alert('No se pudo exportar: '+e.message); }
+    }
+
+    async function exportAllUsersPDF() {
+        try {
+            const token = (localStorage.getItem('adminSessionToken')||'').replace(/\"/g,'');
+            if (!legacyTutoresCache.length) {
+                const rt = await fetch('/api/admin/legacy/tutores', { headers: { 'X-ADMIN-TOKEN': token } });
+                legacyTutoresCache = await rt.json();
+            }
+            if (!legacyVetsCache.length) {
+                const rv = await fetch('/api/admin/legacy/veterinarios', { headers: { 'X-ADMIN-TOKEN': token } });
+                legacyVetsCache = await rv.json();
+            }
+            const w = window.open('', '_blank');
+            w.document.write('<html><head><title>Usuarios de la Clínica</title>');
+            w.document.write('<style>body{font-family:Arial,Helvetica,sans-serif;padding:20px} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ddd;padding:8px;font-size:12px} th{background:#f3f3f3}</style>');
+            w.document.write('</head><body>');
+            w.document.write('<h3>Usuarios de la Clínica</h3>');
+            w.document.write('<table><thead><tr><th>Tipo</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Especialidad</th><th>Tarjeta</th><th>Mascotas</th><th>Estado</th></tr></thead><tbody>');
+            (legacyTutoresCache||[]).forEach(t => { w.document.write(`<tr><td>Tutor</td><td>${t.nombreCompleto||''}</td><td>${t.correo||''}</td><td>${t.telefono||''}</td><td></td><td></td><td>${(t.mascotas||[]).length||0}</td><td>ACTIVO</td></tr>`); });
+            (legacyVetsCache||[]).forEach(v => { w.document.write(`<tr><td>Veterinario</td><td>${v.nombreCompleto||''}</td><td>${v.correo||''}</td><td>${v.telefono||''}</td><td>${v.especialidad||''}</td><td>${v.tarjetaProfesional||''}</td><td></td><td>${v.estado||'ACTIVE'}</td></tr>`); });
+            w.document.write('</tbody></table></body></html>');
+            w.document.close();
+            w.focus();
+            w.print();
+        } catch (e) { alert('No se pudo exportar: '+e.message); }
+    }
+
+    // LÓGICA DEL MODAL DE MODIFICACIÓN (ACCESIBLE GLOBALMENTE)
+    function populateVetSpecialties() {
+        const select = document.getElementById('modal-vet-especialidad');
+        // Limpia solo si está vacío
+        if (select && select.options.length <= 1) { 
+          select.innerHTML = '';
+          // Añade la opción por defecto
+          const defaultOption = document.createElement('option');
+          defaultOption.value = "";
+          defaultOption.textContent = "-- Seleccione --";
+          select.appendChild(defaultOption);
+
+          ES_SPECIALTIES.forEach(spec => {
+              const option = document.createElement('option');
+              option.value = spec;
+              option.textContent = spec;
+              select.appendChild(option);
+          });
+        }
+    }
+
+    function openModificationModal(userType, userIndex) {
+        const modal = document.getElementById('modificationModal');
+        const vetFieldsDiv = document.getElementById('modal-vet-fields');
+        const tutorFieldsDiv = document.getElementById('modal-tutor-fields');
+        const mascotasListDiv = document.getElementById('modal-mascotas-list');
+        
+        // Ocultar campo de dirección por defecto
+        const direccionGroup = document.getElementById('modal-direccion-group');
+        if (direccionGroup) {
+            direccionGroup.style.display = 'none';
+        }
+
+        document.getElementById('modal-user-index').value = userIndex;
+        document.getElementById('modal-user-type').value = userType;
+        
+        vetFieldsDiv.style.display = 'none';
+        tutorFieldsDiv.style.display = 'none';
+
+        let user;
+        let usersData;
+        
+        if (userType === 'tutor') {
+            usersData = JSON.parse(localStorage.getItem('registrosUsuarios')) || [];
+            user = usersData.find(u => u.index === userIndex);
+            tutorFieldsDiv.style.display = 'block';
+
+            // Mostrar y rellenar campo de dirección para tutores
+            if (direccionGroup) {
+                direccionGroup.style.display = 'block';
+            }
+            
+            // Cargar Mascotas
+            const mascotas = JSON.parse(localStorage.getItem(`mascotas_${user.correo}`)) || [];
+            mascotasListDiv.innerHTML = mascotas.map(m => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px dashed #eee;">
+                    <span>${m.nombre} (${m.especie})</span>
+                    <label style="font-weight: normal; font-size: 0.9em;">
+                        <input type="checkbox" data-pet-id="${m.id}" ${m.estado_mascota === 'angelito' ? 'checked' : ''}>
+                        Mascota Ángel 😇
+                    </label>
+                </div>
+            `).join('');
+
+        } else if (userType === 'veterinario') {
+            usersData = JSON.parse(localStorage.getItem('veterinarios')) || [];
+            user = usersData.find(u => u.index === userIndex);
+            vetFieldsDiv.style.display = 'block';
+            
+            // Cargar datos de Vet
+            document.getElementById('modal-vet-tarjeta').value = user.tarjeta_profesional || '';
+            document.getElementById('modal-vet-especialidad').value = user.especialidad || '';
+        }
+
+        if (user) {
+            document.getElementById('modal-nombre').value = user.nombre;
+            document.getElementById('modal-email').value = user.correo;
+            document.getElementById('modal-telefono').value = user.telefono;
+            document.getElementById('modal-doc-tipo').value = user.doc_tipo || 'CC';
+            document.getElementById('modal-doc-numero').value = user.doc_numero || '';
+            if (userType === 'tutor') {
+                document.getElementById('modal-direccion').value = user.direccion || '';
+            }
+            document.getElementById('modal-estado').value = user.estado;
+            modal.style.display = 'block';
+        } else {
+            alert('Usuario no encontrado.');
+        }
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    function handleUpdateUser(event) {
+        event.preventDefault();
+        
+        const userType = document.getElementById('modal-user-type').value;
+        const userIndex = parseInt(document.getElementById('modal-user-index').value);
+        
+        const nuevoNombre = document.getElementById('modal-nombre').value;
+        const nuevoTelefono = document.getElementById('modal-telefono').value;
+        const nuevoEstado = document.getElementById('modal-estado').value;
+        const nuevoDocTipo = document.getElementById('modal-doc-tipo').value;
+        const nuevoDocNumero = document.getElementById('modal-doc-numero').value;
+
+        
+        const storageKey = userType === 'tutor' ? 'registrosUsuarios' : 'veterinarios';
+        let usersData = JSON.parse(localStorage.getItem(storageKey)) || [];
+        
+        // Usar index para encontrar y actualizar
+        const userToUpdateIndex = usersData.findIndex(u => u.index === userIndex);
+
+        if (userToUpdateIndex === -1) {
+            alert('Error: Usuario no encontrado para actualizar.');
+            return false;
+        }
+
+        let user = usersData[userToUpdateIndex];
+        
+        // Actualizar campos comunes
+        user.nombre = nuevoNombre;
+        user.telefono = nuevoTelefono;
+        user.estado = nuevoEstado;
+        user.doc_tipo = nuevoDocTipo;
+        user.doc_numero = nuevoDocNumero;
+        
+        let activityDescription = `Modificación: ${user.tipo} ${user.nombre}. Estado: ${nuevoEstado}.`;
+
+        if (userType === 'tutor') {
+            // Actualizar mascotas (angelito)
+            user.direccion = document.getElementById('modal-direccion').value;
+
+            const checkboxes = document.querySelectorAll('#modal-mascotas-list input[type="checkbox"]');
+            let mascotas = JSON.parse(localStorage.getItem(`mascotas_${user.correo}`)) || [];
+            
+            checkboxes.forEach(checkbox => {
+                const petId = parseInt(checkbox.getAttribute('data-pet-id'));
+                const mascotaIndex = mascotas.findIndex(m => m.id === petId);
+                if (mascotaIndex !== -1) {
+                    const nuevoEstadoMascota = checkbox.checked ? 'angelito' : 'activo';
+                    if (mascotas[mascotaIndex].estado_mascota !== nuevoEstadoMascota) {
+                        mascotas[mascotaIndex].estado_mascota = nuevoEstadoMascota;
+                        activityDescription += ` Mascota ${mascotas[mascotaIndex].nombre} ahora es ${checkbox.checked ? '😇' : 'Activa'}.`;
+                    }
+                }
+            });
+            localStorage.setItem(`mascotas_${user.correo}`, JSON.stringify(mascotas));
+            
+        } else if (userType === 'veterinario') {
+            user.tarjeta_profesional = document.getElementById('modal-vet-tarjeta').value;
+            user.especialidad = document.getElementById('modal-vet-especialidad').value;
+            activityDescription += ` Especialidad: ${user.especialidad}.`;
+        }
+        
+        usersData[userToUpdateIndex] = user;
+        localStorage.setItem(storageKey, JSON.stringify(usersData));
+
+        // Refrescar
+        cargarTablaUsuarios();
+        cargarResumenGeneral();
+        closeModal('modificationModal');
+        addActivity('modificacion', activityDescription, 'gerente');
+        
+        alert(`Cambios guardados para ${user.nombre}.`);
+        return false;
+    }
+
+    // =========================================================
+    //                      GESTIÓN DE CITAS (Sección 6)
+    // =========================================================
+    function cargarCitasList() {
+        const tbody = document.getElementById('citasTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay citas agendadas.</td></tr>';
+        // Nota: cuando exista API de citas reales, conectar aquí.
+    }
+    
+    function filterCitasList() {
+        const citas = JSON.parse(localStorage.getItem('citas')) || [];
+        const filtroTutor = document.getElementById('filtro-tutor').value.toLowerCase();
+        const filtroEstado = document.getElementById('filtro-estado-cita').value;
+        const filtroVet = document.getElementById('filtro-veterinario').value;
+
+        const filtered = citas.filter(cita => {
+            const tutorMatch = cita.tutorEmail.toLowerCase().includes(filtroTutor);
+            const estadoMatch = filtroEstado === '' || cita.estado === filtroEstado;
+            const vetMatch = filtroVet === '' || cita.veterinario === filtroVet;
+            
+            return tutorMatch && estadoMatch && vetMatch;
+        });
+        
+        cargarCitasList(filtered);
+    }
+
+    // Función para que el admin pueda agendar una cita para un tutor
+    function adminAgendarCita(tutorEmail) {
+        const tutores = JSON.parse(localStorage.getItem('registrosUsuarios')) || [];
+        const tutor = tutores.find(t => t.correo === tutorEmail);
+        const mascotas = JSON.parse(localStorage.getItem(`mascotas_${tutorEmail}`)) || [];
+        localStorage.setItem("tutorActivo", tutorEmail); // Simula la sesión del tutor
+        localStorage.setItem("mascotaSeleccionada", mascotas[0].nombre); // Selecciona la primera mascota por defecto
+        window.open('AgendaCitaTutor.html', '_blank'); // Abre la página de agendamiento en una nueva pestaña
+    }
+
+    // =========================================================
+    //                      REGISTRAR VETERINARIO (Sección 7)
+    // =========================================================
+    function validatePassword(password) {
+        const requirements = [
+            { regex: /.{8,}/, msg: "Mínimo 8 caracteres." },
+            { regex: /[A-Z]/, msg: "Al menos una mayúscula." },
+            { regex: /[a-z]/, msg: "Al menos una minúscula." },
+            { regex: /[0-9]/, msg: "Al menos un número." },
+            { regex: /[^A-Za-z0-9]/, msg: "Al menos un símbolo (ej: @, #, $)." }
+        ];
+        
+        const errors = requirements.filter(req => !req.regex.test(password));
+        return errors.length === 0 ? true : errors.map(e => e.msg).join('<br>');
+    }
+    
+    function validateField(input) {
+        const errorElement = document.getElementById(`error-${input.id}`);
+        const value = input.value.trim();
+        let errorMessage = '';
+        let isValid = true;
+
+        input.classList.remove('invalid');
+        
+        if (input.required && !value) {
+            errorMessage = 'Este campo es obligatorio.';
+            isValid = false;
+        } else if (input.id === 'vet-correo') {
+            if (!/\S+@\S+\.\S+/.test(value)) {
+                errorMessage = 'Debe ser un correo electrónico válido.';
+                isValid = false;
+            }
+        } else if (input.id === 'vet-password') {
+            const validationResult = validatePassword(value);
+            if (validationResult !== true) {
+                errorMessage = 'Contraseña débil:<br>' + validationResult;
+                isValid = false;
+            }
+        } else if (input.id === 'vet-tarjeta') {
+            if (!/^TP\d{6}$/.test(value)) {
+                errorMessage = 'Formato debe ser TP seguido de 6 dígitos (Ej: TP123456).';
+                isValid = false;
+            }
+        }
+        
+        if (!isValid) {
+            input.classList.add('invalid');
+            errorElement.innerHTML = errorMessage;
+        } else {
+            errorElement.innerHTML = '';
+        }
+        
+        return isValid;
+    }
+    
+    async function handleRegistrarVeterinario(event) {
+        event.preventDefault();
+        const form = document.getElementById('form-registro-vet');
+        const fields = form.querySelectorAll('input, select');
+        let isFormValid = true;
+        fields.forEach(field => { if (field.id && !validateField(field)) isFormValid = false; });
+        if (!isFormValid) {
+            document.getElementById('vet-message').style.color = 'var(--rojo)';
+            document.getElementById('vet-message').textContent = '❌ Por favor, corrija los errores en el formulario.';
+            return false;
+        }
+
+        const token = (localStorage.getItem('adminSessionToken')||'').replace(/"/g,'');
+        if (!token) {
+            document.getElementById('vet-message').style.color = 'var(--rojo)';
+            document.getElementById('vet-message').textContent = '❌ Debes iniciar sesión como Gerente para registrar.';
+            return false;
+        }
+
+        const payload = {
+            nombreCompleto: document.getElementById('vet-nombre').value,
+            correo: document.getElementById('vet-correo').value,
+            telefono: document.getElementById('vet-telefono').value,
+            tarjetaProfesional: document.getElementById('vet-tarjeta').value,
+            especialidad: document.getElementById('vet-especialidad').value,
+            aniosExperiencia: 0,
+            password: document.getElementById('vet-password').value,
+            // Estos nombres de campo coinciden con los alias JSON
+            // definidos en SolicitudCreacionVeterinario (doc_numero -> cedula, doc_tipo -> docTipo)
+            doc_tipo: document.getElementById('vet-doc-tipo').value,
+            doc_numero: document.getElementById('vet-doc-numero').value
+        };
+
+        try {
+            const resp = await fetch('/api/admin/veterinarios', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payload) });
+            if (!resp.ok) { const d = await resp.json().catch(()=>null); throw new Error(d?.message || ('HTTP '+resp.status)); }
+            document.getElementById('vet-message').style.color = 'var(--verde)';
+            document.getElementById('vet-message').innerHTML = `✅ Veterinario <strong>${payload.nombreCompleto}</strong> registrado con éxito.`;
+            form.reset();
+            cargarTablaVeterinarios();
+        } catch (e) {
+            document.getElementById('vet-message').style.color = 'var(--rojo)';
+            document.getElementById('vet-message').textContent = '❌ No se pudo registrar: ' + e.message;
+        }
+        return false;
+    }
+    
+    // =========================================================
+    //                      GRÁFICOS (Sección 2)
+    // =========================================================
+    function renderUserTypeChart() {
+         if (userTypeChartInstance) userTypeChartInstance.destroy();
+         // Datos para el gráfico 1
+        const tutores = (JSON.parse(localStorage.getItem('registrosUsuarios')) || []).length;
+        const veterinarios = (JSON.parse(localStorage.getItem('veterinarios')) || []).length;
+        const ctxUserType = document.getElementById('userTypeChart')?.getContext('2d');
+        if (ctxUserType) {
+            userTypeChartInstance = new Chart(ctxUserType, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tutores', 'Veterinarios', 'Gerentes'],
+                    datasets: [{
+                        data: [tutores, veterinarios, 1],
+                        backgroundColor: ['#007bff', '#dc3545', '#f28c28'],
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { position: 'right' } } 
+                }
+            });
+        }
+    }
+
+    function renderCharts() {
+        // Destruir instancias existentes para evitar conflictos al re-renderizar
+        if (monthlyChartInstance) monthlyChartInstance.destroy();
+        if (speciesChartInstance) speciesChartInstance.destroy();
+        if (activityChartInstance) activityChartInstance.destroy();
+        
+        // Datos Mock para los gráficos
+        const mockLabels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"];
+        const mockMonthlyData = [50, 75, 120, 150, 200, 180];
+        const mockSpeciesData = [150, 100, 40, 30, 20];
+        const mockActivityData = [15, 20, 10, 35, 25, 40, 30];
+        const mockActivityLabels = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+        
+        // Gráfico 2: Registros por Mes
+        const ctxMonthly = document.getElementById('monthlyChart')?.getContext('2d');
+        if (ctxMonthly) {
+            monthlyChartInstance = new Chart(ctxMonthly, {
+                type: 'bar',
+                data: {
+                    labels: mockLabels,
+                    datasets: [{
+                        label: 'Nuevos Registros',
+                        data: mockMonthlyData,
+                        backgroundColor: 'rgba(242, 140, 40, 0.6)',
+                        borderColor: 'var(--naranja-oscuro)',
+                        borderWidth: 1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, }
+            });
+        }
+
+        // Gráfico 3: Especies de Mascotas
+        const ctxSpecies = document.getElementById('speciesChart')?.getContext('2d');
+        if (ctxSpecies) {
+            speciesChartInstance = new Chart(ctxSpecies, {
+                type: 'polarArea',
+                data: {
+                    labels: ['Perros', 'Gatos', 'Aves', 'Reptiles', 'Otros'],
+                    datasets: [{
+                        data: mockSpeciesData,
+                        backgroundColor: ['#007bff', '#28a745', '#f28c28', '#dc3545', '#6c757d'],
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+            });
+        }
+        
+        // Gráfico 4: Actividad del Sistema (Línea)
+        const ctxActivity = document.getElementById('activityChart')?.getContext('2d');
+        if (ctxActivity) {
+            activityChartInstance = new Chart(ctxActivity, {
+                type: 'line',
+                data: {
+                    labels: mockActivityLabels,
+                    datasets: [{
+                        label: 'Acciones en el Sistema',
+                        data: mockActivityData,
+                        borderColor: 'var(--azul-oscuro)',
+                        backgroundColor: 'rgba(45, 47, 86, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    }
+
+    // =========================================================
+    //                      PLACEHOLDERS (ACCESIBLES GLOBALMENTE)
+    // =========================================================
+    function generarReporte() {
+      alert('Simulando la generación de un reporte gerencial consolidado.');
+    }
+    
+    function configurarSistema() {
+        showSection('configuracion');
+    }
+  </script>
+  <style>
+    /* Acordeón simple para detalle de mascotas */
+    .accordion { border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+    .accordion-item + .accordion-item { border-top: 1px solid #eee; }
+    .accordion-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #fffaf4; border: none; cursor: pointer; font-size: 0.95rem; }
+    .accordion-item.open .accordion-header { background: #fff3e5; }
+    .accordion-header i { color: #f28c28; transition: transform .2s ease; }
+    .accordion-item.open .accordion-header i { transform: rotate(180deg); }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height .25s ease; padding: 0 14px; background: #fff; }
+    .accordion-item.open .accordion-content { padding: 10px 14px; max-height: 300px; }
+    .pet-detail { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #eee; font-size: 0.9rem; }
+    .pet-detail:last-child { border-bottom: none; }
+  </style>
+  <script>
+    // Overrides: conectar edición con backend (tutores y veterinarios)
+    async function openModificationModal(userType, userId) {
+      const modal = document.getElementById('modificationModal');
+      const vetFieldsDiv = document.getElementById('modal-vet-fields');
+      const tutorFieldsDiv = document.getElementById('modal-tutor-fields');
+      const mascotasListDiv = document.getElementById('modal-mascotas-list');
+      const direccionGroup = document.getElementById('modal-direccion-group');
+      const estadoGroup = document.getElementById('modal-estado-group');
+      const vetTarjeta = document.getElementById('modal-vet-tarjeta');
+      const vetEspecialidad = document.getElementById('modal-vet-especialidad');
+      const docTipo = document.getElementById('modal-doc-tipo');
+      const docNumero = document.getElementById('modal-doc-numero');
+      document.getElementById('modal-user-index').value = userId;
+      document.getElementById('modal-user-type').value = userType;
+      vetFieldsDiv.style.display = 'none';
+      tutorFieldsDiv.style.display = 'none';
+      if (direccionGroup) direccionGroup.style.display = 'none';
+      if (estadoGroup) estadoGroup.style.display = 'none';
+      mascotasListDiv.innerHTML = '';
+      // Reset de validaciones para evitar bloqueo por campos ocultos
+      if (vetTarjeta) { vetTarjeta.required = false; vetTarjeta.disabled = true; }
+      if (vetEspecialidad) { vetEspecialidad.required = false; vetEspecialidad.disabled = true; }
+      if (docTipo) { docTipo.required = true; docTipo.disabled = false; }
+      if (docNumero) { docNumero.required = true; docNumero.disabled = false; }
+
+      const setCommon = (nombre, correo, telefono, estado, docTipo = 'CC', docNum = '') => {
+        document.getElementById('modal-nombre').value = nombre || '';
+        document.getElementById('modal-email').value = correo || '';
+        document.getElementById('modal-telefono').value = telefono || '';
+        document.getElementById('modal-doc-tipo').value = docTipo;
+        document.getElementById('modal-doc-numero').value = docNum;
+        document.getElementById('modal-estado').value = (estado || 'activo').toLowerCase();
+      };
+
+      try {
+        if (userType === 'tutor') {
+          const resp = await fetch(`/api/tutores/${userId}`);
+          if (!resp.ok) throw new Error('HTTP '+resp.status);
+          const t = await resp.json();
+          tutorFieldsDiv.style.display = 'block';
+          if (direccionGroup) direccionGroup.style.display = 'block';
+          if (estadoGroup) estadoGroup.style.display = 'block';
+          setCommon(t.nombreCompleto, t.correo, t.telefono, 'activo', 'CC', (t.documento||'').replace('CC ','') );
+          document.getElementById('modal-direccion').value = t.direccionCompleta || '';
+          const mascotas = Array.isArray(t.mascotas) ? t.mascotas : [];
+          mascotasListDiv.innerHTML = mascotas.length ? mascotas.map(m => {
+            const edad = m.edadValor ? `${m.edadValor} ${m.edadUnidad||''}` : '';
+            return `<div class="mascota-item"><strong>${m.nombre}</strong> - ${m.especie} ${edad? '('+edad+')':''}</div>`;
+          }).join('') : '<p style="color:#666">Este tutor no tiene mascotas registradas.</p>';
+        } else {
+          const token = (localStorage.getItem('adminSessionToken')||'').replace(/\"/g,'');
+          if (!token) { alert('Debes iniciar sesión como Gerente para modificar veterinarios.'); return; }
+          // Intento dominio actual, si falla, legacy
+          let resp = await fetch(`/api/admin/veterinarios/${userId}`, { headers: { 'X-ADMIN-TOKEN': token }});
+          let v = null;
+          if (resp.ok) { v = await resp.json(); }
+          if (!resp.ok || !v || !v.id) {
+            resp = await fetch(`/api/admin/legacy/veterinarios`, { headers: { 'X-ADMIN-TOKEN': token }});
+            const list = await resp.json().catch(()=>[]);
+            v = (Array.isArray(list)?list:[]).find(x=>x.id===userId);
+            if (!v) { alert('No se encontró el veterinario seleccionado.'); return; }
+          }
+          vetFieldsDiv.style.display = 'block';
+          if (estadoGroup) estadoGroup.style.display = 'block';
+          // Habilitar y requerir campos de vet; relajar documento
+          if (vetTarjeta) { vetTarjeta.disabled = false; vetTarjeta.required = true; }
+          if (vetEspecialidad) { vetEspecialidad.disabled = false; vetEspecialidad.required = true; }
+          if (docTipo) { docTipo.required = false; docTipo.disabled = true; }
+          if (docNumero) { docNumero.required = false; docNumero.disabled = true; }
+          setCommon(v.nombreCompleto||v.nombre, v.correo||v.email, v.telefono||v.phoneNumber, ((v.estado||v.status)||'ACTIVE').toLowerCase());
+          document.getElementById('modal-vet-tarjeta').value = v.tarjetaProfesional || v.professionalLicense || '';
+          document.getElementById('modal-vet-especialidad').value = v.especialidad || '';
+          // Habilitar edición de email para veterinario
+          const emailInput = document.getElementById('modal-email');
+          if (emailInput) emailInput.disabled = false;
+        }
+        modal.style.display = 'block';
+      } catch (e) {
+        alert('No se pudo cargar la información. ' + (e && e.message ? e.message : ''));
+      }
+    }
+
+    async function handleUpdateUser(event) {
+      event.preventDefault();
+      const userType = document.getElementById('modal-user-type').value;
+      const userId = parseInt(document.getElementById('modal-user-index').value);
+      const nombre = document.getElementById('modal-nombre').value.trim();
+      const correo = document.getElementById('modal-email').value.trim();
+      const telefono = document.getElementById('modal-telefono').value.trim();
+      const estado = document.getElementById('modal-estado').value;
+      const direccion = document.getElementById('modal-direccion')?.value?.trim() || '';
+      if (!telefono) { alert('El teléfono es obligatorio.'); return false; }
+
+      try {
+        if (userType === 'tutor') {
+          // Actualizar datos básicos del tutor (teléfono/dirección)
+          const payload = { telefono: telefono, direccion: { completo: direccion } };
+          const resp = await fetch(`/api/tutores/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          if (!resp.ok) { const d = await resp.json().catch(()=>null); throw new Error(d?.message || resp.status); }
+          // Actualizar estado del tutor vía admin legacy (user_accounts.status por email)
+          const token = (localStorage.getItem('adminSessionToken')||'').replace(/"/g,'');
+          const mapEstado = { activo: 'ACTIVE', inactivo: 'INACTIVE', pendiente: 'PENDING' };
+          const respEstadoTutor = await fetch(`/api/admin/legacy/tutores/${userId}/estado`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify({ estado: mapEstado[estado] || 'ACTIVE' }) });
+          if (!respEstadoTutor.ok) { const d2 = await respEstadoTutor.json().catch(()=>null); throw new Error(d2?.message || respEstadoTutor.status); }
+          alert('✅ Cambios guardados para el Tutor.');
+          cargarTablaTutores();
+        } else {
+          const token = (localStorage.getItem('adminSessionToken')||'').replace(/"/g,'');
+          // Validar campos obligatorios
+          const tarjeta = document.getElementById('modal-vet-tarjeta').value.trim();
+          const especialidad = document.getElementById('modal-vet-especialidad').value.trim();
+          if (!nombre || !correo || !telefono || !especialidad || !tarjeta) { alert('Todos los campos del veterinario son obligatorios.'); return false; }
+          // 1) Intentar actualizar por dominio actual; si falla, usar legacy incluyendo cédula
+          let success = false; let errMsg = '';
+          try {
+            const payloadPut = { nombreCompleto: nombre, correo, telefono, especialidad, tarjetaProfesional: tarjeta };
+            const respPut = await fetch(`/api/admin/veterinarios/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadPut) });
+            if (respPut.ok) {
+              const mapEstado = { activo: 'ACTIVE', inactivo: 'INACTIVE', pendiente: 'PENDING' };
+              const payloadEstado = { estado: mapEstado[estado] || 'ACTIVE' };
+              const respEstado = await fetch(`/api/admin/veterinarios/${userId}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadEstado) });
+              if (!respEstado.ok) throw new Error('Estado: ' + respEstado.status);
+              success = true;
+            } else {
+              errMsg = 'HTTP '+respPut.status;
+            }
+          } catch (_) {}
+          if (!success) {
+            const cedula = document.getElementById('modal-doc-numero').value.trim();
+            const payloadLegacy = { nombreCompleto: nombre, correo, telefono, especialidad, tarjetaProfesional: tarjeta, cedula };
+            const respPutL = await fetch(`/api/admin/legacy/veterinarios/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadLegacy) });
+            if (!respPutL.ok) { const d = await respPutL.json().catch(()=>null); throw new Error(d?.message || errMsg || respPutL.status); }
+            const mapEstado = { activo: 'ACTIVE', inactivo: 'INACTIVE', pendiente: 'PENDING' };
+            const payloadEstado = { estado: mapEstado[estado] || 'ACTIVE' };
+            const respEstadoL = await fetch(`/api/admin/legacy/veterinarios/${userId}/estado`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadEstado) });
+            if (!respEstadoL.ok) { const d = await respEstadoL.json().catch(()=>null); throw new Error(d?.message || respEstadoL.status); }
+          }
+          alert('✅ Datos del Veterinario actualizados.');
+          cargarTablaVeterinarios();
+        }
+        closeModal('modificationModal');
+        return false;
+      } catch (e) {
+        alert('❌ No se pudo guardar: ' + e.message);
+        return false;
+      }
+    }
+  </script>
+  <!-- <script>
+    // Redefinición final: openModificationModal con acordeón de mascotas (prioridad sobre anteriores)
+    async function openModificationModal(userType, userId) {
+      const modal = document.getElementById('modificationModal');
+      const vetFieldsDiv = document.getElementById('modal-vet-fields');
+      const tutorFieldsDiv = document.getElementById('modal-tutor-fields');
+      const mascotasListDiv = document.getElementById('modal-mascotas-list');
+      const direccionGroup = document.getElementById('modal-direccion-group');
+      document.getElementById('modal-user-index').value = userId;
+      document.getElementById('modal-user-type').value = userType;
+      vetFieldsDiv.style.display = 'none';
+      tutorFieldsDiv.style.display = 'none';
+      if (direccionGroup) direccionGroup.style.display = 'none';
+      if (estadoGroup) estadoGroup.style.display = 'none';
+      mascotasListDiv.innerHTML = '';
+      // Evitar validación HTML5 sobre campos ocultos
+      if (vetTarjeta) { vetTarjeta.required = false; vetTarjeta.disabled = true; }
+      if (vetEspecialidad) { vetEspecialidad.required = false; vetEspecialidad.disabled = true; }
+      if (docTipo) { docTipo.required = true; docTipo.disabled = false; }
+      if (docNumero) { docNumero.required = true; docNumero.disabled = false; }
+
+      const setCommon = (nombre, correo, telefono, estado, docTipo = 'CC', docNum = '') => {
+        document.getElementById('modal-nombre').value = nombre || '';
+        document.getElementById('modal-email').value = correo || '';
+        document.getElementById('modal-telefono').value = telefono || '';
+        document.getElementById('modal-doc-tipo').value = docTipo;
+        document.getElementById('modal-doc-numero').value = docNum;
+        document.getElementById('modal-estado').value = (estado || 'activo').toLowerCase();
+      };
+
+      try {
+        if (userType === 'tutor') {
+          const resp = await fetch(`/api/tutores/${userId}`);
+          const t = await resp.json();
+          tutorFieldsDiv.style.display = 'block';
+          if (direccionGroup) direccionGroup.style.display = 'block';
+          if (estadoGroup) estadoGroup.style.display = 'block';
+          setCommon(t.nombreCompleto, t.correo, t.telefono, 'activo', 'CC', (t.documento||'').replace('CC ','') );
+          document.getElementById('modal-direccion').value = t.direccionCompleta || '';
+          const mascotas = Array.isArray(t.mascotas) ? t.mascotas : [];
+          if (!mascotas.length) {
+            mascotasListDiv.innerHTML = '<p style="color:#666">Este tutor no tiene mascotas registradas.</p>';
+          } else {
+            let html = '<div class="accordion">';
+            mascotas.forEach((m,i) => {
+              const edadTxt = m.edadValor ? (m.edadValor + ' ' + (m.edadUnidad||'')) : '';
+              html += '<div class="accordion-item">'
+                   + '<button type="button" class="accordion-header" data-acc="' + i + '">'
+                   + '<span><strong>'+ (m.nombre||'') +'</strong> - ' + (m.especie||'') + (edadTxt? ' ('+edadTxt+')' : '') + '</span>'
+                   + '<i class="fas fa-chevron-down"></i>'
+                   + '</button>'
+                   + '<div class="accordion-content">'
+                   + '<div class="pet-detail"><span>Edad</span><span>'+ (edadTxt||'N/D') +'</span></div>'
+                   + '<div class="pet-detail"><span>Raza</span><span>'+ (m.raza||'N/D') +'</span></div>'
+                   + '<div class="pet-detail"><span>Sexo</span><span>'+ (m.sexo||'N/D') +'</span></div>'
+                   + '<div class="pet-detail"><span>Estado</span><span>'+ (m.estado_mascota||'activo') +'</span></div>'
+                   + '</div>'
+                   + '</div>'; 
+            });
+            html += '</div>';
+            mascotasListDiv.innerHTML = html;
+            mascotasListDiv.querySelectorAll('.accordion-header').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const item = btn.parentElement;
+                if (item.classList.contains('open')) item.classList.remove('open'); else item.classList.add('open');
+              });
+            });
+          }
+        } else {
+          const token = (localStorage.getItem('adminSessionToken')||'').replace(/"/g,'');
+          if (!token) { alert('Debes iniciar sesión como Gerente para modificar veterinarios.'); return; }
+          const resp = await fetch(`/api/admin/legacy/veterinarios/${userId}`, { headers: { 'X-ADMIN-TOKEN': token }});
+          if (!resp.ok) { alert('No se pudo cargar la información. HTTP ' + resp.status); return; }
+          const v = await resp.json();
+          vetFieldsDiv.style.display = 'block';
+          if (estadoGroup) estadoGroup.style.display = 'block';
+          // Habilitar y requerir campos del vet; relajar documento
+          if (vetTarjeta) { vetTarjeta.disabled = false; vetTarjeta.required = true; }
+          if (vetEspecialidad) { vetEspecialidad.disabled = false; vetEspecialidad.required = true; }
+          // Permitir modificar cédula (legacy: cedu_mv)
+          if (docTipo) { docTipo.required = false; docTipo.disabled = false; }
+          if (docNumero) { docNumero.required = false; docNumero.disabled = false; }
+          setCommon(v.nombreCompleto||v.nombre, v.correo||v.email, v.telefono||v.phoneNumber, ((v.estado||v.status)||'ACTIVE').toLowerCase());
+          document.getElementById('modal-vet-tarjeta').value = v.tarjetaProfesional || v.professionalLicense || '';
+          document.getElementById('modal-vet-especialidad').value = v.especialidad || '';
+          const emailInput = document.getElementById('modal-email');
+          if (emailInput) emailInput.disabled = false;
+        }
+        modal.style.display = 'block';
+      } catch (e) {
+        alert('No se pudo cargar la información.');
+      }
+    }
+  </script> -->
+</body>
+</html>

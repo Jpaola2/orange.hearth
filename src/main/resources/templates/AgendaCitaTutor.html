@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendar Cita - OrangeHearth</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #fff8f0 0%, #ffecd1 100%);
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: linear-gradient(135deg, #f28c28, #d86f00);
+      padding: 1rem 2rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .navbar .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .back-btn {
+      background: white;
+      color: #f28c28;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .back-btn:hover {
+      background: #ffe0c0;
+      transform: translateY(-2px);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .appointment-header {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .appointment-header h1 {
+      color: #d86f00;
+      margin: 0 0 1rem 0;
+      font-size: 2.2rem;
+    }
+
+    .pet-info {
+      background: linear-gradient(135deg, #f28c28, #d86f00);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      display: inline-block;
+      font-weight: 600;
+    }
+
+    .steps-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .step-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .step-card.active {
+      border-color: #f28c28;
+    }
+
+    .step-card.completed {
+      border-color: #4caf50;
+      background: linear-gradient(135deg, #f1f8e9, #e8f5e8);
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #f28c28;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .step-number.completed {
+      background: #4caf50;
+    }
+
+    .step-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .vet-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .vet-card {
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .vet-card:hover {
+      border-color: #f28c28;
+      transform: translateY(-3px);
+    }
+
+    .vet-card.selected {
+      border-color: #f28c28;
+      background: linear-gradient(135deg, #fff8f0, #ffecd1);
+    }
+
+    .vet-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
+    }
+
+    .vet-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0 0 0.5rem 0;
+      color: #333;
+    }
+
+    .vet-specialty {
+      color: #666;
+      font-size: 0.9rem;
+      margin: 0 0 1rem 0;
+    }
+
+    .vet-rating {
+      display: flex;
+      justify-content: center;
+      gap: 0.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .calendar-container {
+      margin-top: 2rem;
+    }
+
+    .calendar {
+      background: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .calendar-nav {
+      background: #f28c28;
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .calendar-nav:hover {
+      background: #d86f00;
+      transform: scale(1.1);
+    }
+
+    .calendar-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      background: #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .calendar-day-header {
+      background: #f28c28;
+      color: white;
+      padding: 0.8rem;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .calendar-day {
+      background: white;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .calendar-day:hover {
+      background: #fff8f0;
+    }
+
+    .calendar-day.other-month {
+      color: #ccc;
+      background: #f8f9fa;
+    }
+
+    .calendar-day.today {
+      background: linear-gradient(135deg, #2196f3, #1976d2);
+      color: white;
+      font-weight: bold;
+    }
+
+    .calendar-day.selected {
+      background: linear-gradient(135deg, #f28c28, #d86f00);
+      color: white;
+      font-weight: bold;
+    }
+
+    .calendar-day.disabled {
+      background: #f5f5f5;
+      color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .time-slots {
+      background: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .time-slots h3 {
+      margin: 0 0 1rem 0;
+      color: #333;
+      font-size: 1.2rem;
+    }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .time-slot {
+      padding: 0.8rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .time-slot:hover {
+      border-color: #f28c28;
+      background: #fff8f0;
+    }
+
+    .time-slot.selected {
+      border-color: #f28c28;
+      background: linear-gradient(135deg, #f28c28, #d86f00);
+      color: white;
+    }
+
+    .time-slot.unavailable {
+      background: #f5f5f5;
+      color: #ccc;
+      cursor: not-allowed;
+      border-color: #ddd;
+    }
+
+    .confirm-section {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      text-align: center;
+      margin-top: 2rem;
+      display: none;
+    }
+
+    .confirm-section.show {
+      display: block;
+      animation: slideUp 0.5s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .confirm-btn {
+      background: linear-gradient(135deg, #4caf50, #388e3c);
+      color: white;
+      border: none;
+      padding: 1.2rem 3rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 0 auto;
+    }
+
+    .confirm-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+    }
+
+    .appointment-summary {
+      background: linear-gradient(135deg, #e8f5e8, #f1f8e9);
+      border: 2px solid #4caf50;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .success-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .success-modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .success-content {
+      background: white;
+      padding: 3rem;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      transform: scale(0.8);
+      transition: transform 0.3s ease;
+    }
+
+    .success-modal.show .success-content {
+      transform: scale(1);
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #4caf50, #388e3c);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      color: white;
+      font-size: 2.5rem;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    @media (max-width: 768px) {
+      .steps-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .vet-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .time-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="brand">
+      <i class="fas fa-calendar-plus"></i>
+      Agendar Cita Veterinaria
+    </div>
+    <button class="back-btn" onclick="volverDashboard()">
+      <i class="fas fa-arrow-left"></i>
+      Volver
+    </button>
+  </div>
+
+  <div class="container">
+    <div class="appointment-header">
+      <h1>
+        <i class="fas fa-stethoscope"></i>
+        Agenda una Consulta
+      </h1>
+      <div class="pet-info" id="petInfo">
+        <i class="fas fa-paw"></i>
+        Cargando información de la mascota...
+      </div>
+    </div>
+
+    <div class="steps-container">
+      <!-- Paso 1: Seleccionar Veterinario -->
+      <div class="step-card active" id="step1">
+        <div class="step-header">
+          <div class="step-number">1</div>
+          <h3 class="step-title">Elige tu Veterinario</h3>
+        </div>
+        <div class="vet-grid" id="vetGrid">
+          <!-- Se llenará dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Paso 2: Seleccionar Fecha -->
+      <div class="step-card" id="step2" style="display: none;">
+        <div class="step-header">
+          <div class="step-number">2</div>
+          <h3 class="step-title">Selecciona la Fecha</h3>
+        </div>
+        <div class="calendar-container">
+          <div class="calendar">
+            <div class="calendar-header">
+              <button class="calendar-nav" onclick="cambiarMes(-1)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <div class="calendar-title" id="calendarTitle"></div>
+              <button class="calendar-nav" onclick="cambiarMes(1)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid">
+              <!-- Se generará dinámicamente -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 3: Seleccionar Hora -->
+      <div class="step-card" id="step3" style="display: none;">
+        <div class="step-header">
+          <div class="step-number">3</div>
+          <h3 class="step-title">Elige la Hora</h3>
+        </div>
+        <div class="time-slots">
+          <h3 id="selectedDateTitle">Horarios disponibles</h3>
+          <div class="time-grid" id="timeGrid">
+            <!-- Se llenará dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de confirmación -->
+    <div class="confirm-section" id="confirmSection">
+      <div class="appointment-summary" id="appointmentSummary">
+        <!-- Se llenará dinámicamente -->
+      </div>
+      <button class="confirm-btn" onclick="confirmarCita()">
+        <i class="fas fa-check-circle"></i>
+        Confirmar Cita
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de éxito -->
+  <div class="success-modal" id="successModal">
+    <div class="success-content">
+      <div class="success-icon">
+        <i class="fas fa-check"></i>
+      </div>
+      <h2 style="color: #4caf50; margin-bottom: 1rem;">¡Cita Agendada!</h2>
+      <div id="appointmentDetails">
+        <!-- Se llenará dinámicamente -->
+      </div>
+      <button class="confirm-btn" onclick="cerrarModalYVolver()" style="margin-top: 2rem;">
+        <i class="fas fa-home"></i>
+        Volver al Dashboard
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Variables globales
+    let mascotaSeleccionada = localStorage.getItem("mascotaSeleccionada");
+    let tutorActivo = localStorage.getItem("tutorActivo");
+    let veterinarioSeleccionado = null;
+    let fechaSeleccionada = null;
+    let horaSeleccionada = null;
+    let mesActual = new Date().getMonth();
+    let añoActual = new Date().getFullYear();
+
+    const veterinarios = [
+      {
+        id: 1,
+        nombre: "Dr. Juan Pérez",
+        especialidad: "Medicina General",
+        tarjeta: "TP123456",
+        rating: 4.8,
+        disponibilidad: {
+          lunes: ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
+          martes: ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
+          miercoles: ["09:00", "10:00", "11:00", "14:00", "15:00"],
+          jueves: ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
+          viernes: ["09:00", "10:00", "11:00", "14:00", "15:00"],
+          sabado: ["09:00", "10:00", "11:00"],
+          domingo: []
+        }
+      },
+      {
+        id: 2,
+        nombre: "Dra. Carmen Silva",
+        especialidad: "Cirugía",
+        tarjeta: "TP789012",
+        rating: 4.9,
+        disponibilidad: {
+          lunes: ["10:00", "11:00", "14:00", "15:00", "16:00"],
+          martes: ["09:00", "10:00", "11:00", "14:00", "15:00"],
+          miercoles: ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
+          jueves: ["10:00", "11:00", "14:00", "15:00"],
+          viernes: ["09:00", "10:00", "11:00", "14:00"],
+          sabado: ["09:00", "10:00"],
+          domingo: []
+        }
+      },
+      {
+        id: 3,
+        nombre: "Dr. Miguel Torres",
+        especialidad: "Dermatología",
+        tarjeta: "TP345678",
+        rating: 4.7,
+        disponibilidad: {
+          lunes: ["09:00", "10:00", "14:00", "15:00"],
+          martes: ["09:00", "10:00", "11:00", "15:00", "16:00"],
+          miercoles: ["10:00", "11:00", "14:00", "15:00"],
+          jueves: ["09:00", "10:00", "11:00", "14:00", "15:00"],
+          viernes: ["09:00", "10:00", "11:00"],
+          sabado: [],
+          domingo: []
+        }
+      }
+    ];
+
+    const meses = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+
+    const diasSemana = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Inicializando agendamiento...');
+      console.log('Mascota seleccionada:', mascotaSeleccionada);
+      console.log('Tutor activo:', tutorActivo);
+      
+      if (!mascotaSeleccionada || !tutorActivo) {
+        alert("Error: No se ha seleccionado una mascota");
+        window.location.href = "dashboardTutor.html";
+        return;
+      }
+
+      cargarInfoMascota();
+      cargarVeterinarios();
+    });
+
+    function cargarInfoMascota() {
+      const mascotas = JSON.parse(localStorage.getItem(`mascotas_${tutorActivo}`) || '[]');
+      const mascota = mascotas.find(m => m.nombre === mascotaSeleccionada);
+      
+      console.log('Mascota encontrada:', mascota);
+      
+      if (mascota) {
+        document.getElementById('petInfo').innerHTML = `
+          <i class="fas fa-paw"></i>
+          Cita para ${mascota.nombre} (${mascota.especie})
+        `;
+      }
+    }
+
+    function cargarVeterinarios() {
+      const vetGrid = document.getElementById('vetGrid');
+      
+      vetGrid.innerHTML = veterinarios.map(vet => `
+        <div class="vet-card" onclick="seleccionarVeterinario(${vet.id})">
+          <div class="vet-avatar">
+            <i class="fas fa-user-md"></i>
+          </div>
+          <div class="vet-name">${vet.nombre}</div>
+          <div class="vet-specialty">${vet.especialidad}</div>
+          <div class="vet-rating">
+            ${'★'.repeat(Math.floor(vet.rating))}${'☆'.repeat(5 - Math.floor(vet.rating))}
+            <span style="margin-left: 0.5rem; color: #666;">${vet.rating}</span>
+          </div>
+          <small style="color: #999;">Tarjeta: ${vet.tarjeta}</small>
+        </div>
+      `).join('');
+    }
+
+    function seleccionarVeterinario(id) {
+      veterinarioSeleccionado = veterinarios.find(v => v.id === id);
+      console.log('Veterinario seleccionado:', veterinarioSeleccionado);
+      
+      // Actualizar UI
+      document.querySelectorAll('.vet-card').forEach(card => card.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
+      
+      // Mostrar paso 2
+      document.getElementById('step1').classList.add('completed');
+      document.getElementById('step1').querySelector('.step-number').classList.add('completed');
+      document.getElementById('step2').style.display = 'block';
+      document.getElementById('step2').classList.add('active');
+      
+      generarCalendario();
+    }
+
+    function generarCalendario() {
+      const title = document.getElementById('calendarTitle');
+      title.textContent = `${meses[mesActual]} ${añoActual}`;
+      
+      const grid = document.getElementById('calendarGrid');
+      
+      // Limpiar grid
+      grid.innerHTML = '';
+      
+      // Headers de días
+      diasSemana.forEach(dia => {
+        const header = document.createElement('div');
+        header.className = 'calendar-day-header';
+        header.textContent = dia;
+        grid.appendChild(header);
+      });
+      
+      // Primer día del mes y días en el mes
+      const primerDia = new Date(añoActual, mesActual, 1).getDay();
+      const diasEnMes = new Date(añoActual, mesActual + 1, 0).getDate();
+      const hoy = new Date();
+      
+      // Días del mes anterior
+      const mesAnterior = new Date(añoActual, mesActual, 0).getDate();
+      for (let i = primerDia - 1; i >= 0; i--) {
+        const dia = document.createElement('div');
+        dia.className = 'calendar-day other-month';
+        dia.textContent = mesAnterior - i;
+        grid.appendChild(dia);
+      }
+      
+      // Días del mes actual
+      for (let dia = 1; dia <= diasEnMes; dia++) {
+        const diaElement = document.createElement('div');
+        diaElement.className = 'calendar-day';
+        diaElement.textContent = dia;
+        
+        const fecha = new Date(añoActual, mesActual, dia);
+        
+        // Marcar hoy
+        if (fecha.toDateString() === hoy.toDateString()) {
+          diaElement.classList.add('today');
+        }
+        
+        // Deshabilitar días pasados y domingos
+        if (fecha < hoy || fecha.getDay() === 0) {
+          diaElement.classList.add('disabled');
+        } else {
+          diaElement.onclick = () => seleccionarFecha(fecha);
+        }
+        
+        grid.appendChild(diaElement);
+      }
+      
+      // Días del mes siguiente
+      const diasRestantes = 42 - (primerDia + diasEnMes);
+      for (let dia = 1; dia <= diasRestantes; dia++) {
+        const diaElement = document.createElement('div');
+        diaElement.className = 'calendar-day other-month';
+        diaElement.textContent = dia;
+        grid.appendChild(diaElement);
+      }
+    }
+
+    function cambiarMes(direccion) {
+      mesActual += direccion;
+      
+      if (mesActual > 11) {
+        mesActual = 0;
+        añoActual++;
+      } else if (mesActual < 0) {
+        mesActual = 11;
+        añoActual--;
+      }
+      
+      generarCalendario();
+    }
+
+    function seleccionarFecha(fecha) {
+      if (!veterinarioSeleccionado) {
+        alert('Primero selecciona un veterinario');
+        return;
+      }
+      
+      fechaSeleccionada = fecha;
+      console.log('Fecha seleccionada:', fecha);
+      
+      // Actualizar UI del calendario
+      document.querySelectorAll('.calendar-day').forEach(day => {
+        day.classList.remove('selected');
+      });
+      event.target.classList.add('selected');
+      
+      // Mostrar paso 3
+      document.getElementById('step2').classList.add('completed');
+      document.getElementById('step2').querySelector('.step-number').classList.add('completed');
+      document.getElementById('step3').style.display = 'block';
+      document.getElementById('step3').classList.add('active');
+      
+      cargarHorasDisponibles();
+    }
+
+    function cargarHorasDisponibles() {
+      const diaSemana = getDiaSemanaTexto(fechaSeleccionada.getDay());
+      const horasDisponibles = veterinarioSeleccionado.disponibilidad[diaSemana] || [];
+      
+      console.log('Día de la semana:', diaSemana);
+      console.log('Horas disponibles:', horasDisponibles);
+      
+      const fechaFormateada = fechaSeleccionada.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      document.getElementById('selectedDateTitle').textContent = `Horarios para ${fechaFormateada}`;
+      
+      const timeGrid = document.getElementById('timeGrid');
+      
+      if (horasDisponibles.length === 0) {
+        timeGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: #666; padding: 2rem;">
+            <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+            No hay horarios disponibles para este día
+          </div>
+        `;
+        return;
+      }
+      
+      timeGrid.innerHTML = horasDisponibles.map(hora => `
+        <div class="time-slot" onclick="seleccionarHora('${hora}')">
+          ${hora}
+        </div>
+      `).join('');
+    }
+
+    function getDiaSemanaTexto(dia) {
+      const dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+      return dias[dia];
+    }
+
+    function seleccionarHora(hora) {
+      horaSeleccionada = hora;
+      console.log('Hora seleccionada:', hora);
+      
+      // Actualizar UI
+      document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.classList.remove('selected');
+      });
+      event.target.classList.add('selected');
+      
+      // Marcar paso 3 como completado
+      document.getElementById('step3').classList.add('completed');
+      document.getElementById('step3').querySelector('.step-number').classList.add('completed');
+      
+      mostrarResumen();
+    }
+
+    function mostrarResumen() {
+      const fechaFormateada = fechaSeleccionada.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      const summary = document.getElementById('appointmentSummary');
+      summary.innerHTML = `
+        <h3 style="margin: 0 0 1rem 0; color: #4caf50;">
+          <i class="fas fa-check-circle"></i>
+          Resumen de tu Cita
+        </h3>
+        <div style="text-align: left;">
+          <p><strong>Mascota:</strong> ${mascotaSeleccionada}</p>
+          <p><strong>Veterinario:</strong> ${veterinarioSeleccionado.nombre}</p>
+          <p><strong>Especialidad:</strong> ${veterinarioSeleccionado.especialidad}</p>
+          <p><strong>Fecha:</strong> ${fechaFormateada}</p>
+          <p><strong>Hora:</strong> ${horaSeleccionada}</p>
+        </div>
+      `;
+      
+      document.getElementById('confirmSection').classList.add('show');
+    }
+
+    function confirmarCita() {
+      console.log('Confirmando cita...');
+      
+      const fechaCompleta = new Date(fechaSeleccionada);
+      fechaCompleta.setHours(parseInt(horaSeleccionada.split(':')[0]), parseInt(horaSeleccionada.split(':')[1]));
+      
+      const nuevaCita = {
+        mascota: mascotaSeleccionada,
+        veterinario: veterinarioSeleccionado.nombre,
+        especialidad: veterinarioSeleccionado.especialidad,
+        fecha: fechaSeleccionada.toLocaleDateString('es-ES'),
+        hora: horaSeleccionada,
+        fechaCompleta: fechaCompleta.toISOString(),
+        estado: 'programada',
+        id: Date.now()
+      };
+      
+      console.log('Nueva cita:', nuevaCita);
+      
+      // Guardar cita
+      const citas = JSON.parse(localStorage.getItem(`citas_${mascotaSeleccionada}`) || '[]');
+      citas.push(nuevaCita);
+      localStorage.setItem(`citas_${mascotaSeleccionada}`, JSON.stringify(citas));
+      
+      console.log('Cita guardada en localStorage');
+      
+      // Mostrar modal de éxito
+      mostrarModalExito(nuevaCita);
+    }
+
+    function mostrarModalExito(cita) {
+      const modal = document.getElementById('successModal');
+      const details = document.getElementById('appointmentDetails');
+      
+      details.innerHTML = `
+        <p style="font-size: 1.1rem; margin-bottom: 1rem;">
+          Tu cita ha sido programada para el día <strong>${cita.fecha}</strong> a las <strong>${cita.hora}</strong>
+        </p>
+        <div style="background: #f0f8ff; padding: 1.5rem; border-radius: 10px; margin: 1rem 0;">
+          <p>Dr. ${cita.veterinario} - ${cita.especialidad}</p>
+          <p>Mascota: ${cita.mascota}</p>
+        </div>
+        <p style="font-size: 0.9rem; color: #666;">
+          Recibirás un recordatorio 24 horas antes de tu cita
+        </p>
+      `;
+      
+      modal.classList.add('show');
+    }
+
+    function cerrarModalYVolver() {
+      console.log('Cerrando modal y volviendo al dashboard...');
+      document.getElementById('successModal').classList.remove('show');
+      setTimeout(() => {
+        window.location.href = 'dashboardTutor.html';
+      }, 300);
+    }
+
+    function volverDashboard() {
+      if (confirm('¿Estás seguro de que deseas salir? Se perderá el progreso actual.')) {
+        window.location.href = 'dashboardTutor.html';
+      }
+    }
+  </script>
+</body>
+</html>

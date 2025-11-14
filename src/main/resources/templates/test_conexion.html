@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Conexión - OrangeHearth</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #f28c28;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            margin: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background: #d86f00;
+        }
+        .resultado {
+            background: #f8f9fa;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+            border-left: 4px solid #f28c28;
+        }
+        .error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test de Conexión - OrangeHearth</h1>
+        <p>Usa este archivo para verificar que todo funciona correctamente.</p>
+        
+        <h2>1. Verificar Datos</h2>
+        <button onclick="verificarDatos()">Ver Datos en localStorage</button>
+        <button onclick="limpiarDatos()">Limpiar TODO localStorage</button>
+        
+        <h2>2. Crear Usuario de Prueba</h2>
+        <button onclick="crearUsuarioPrueba()">Crear Usuario de Prueba</button>
+        
+        <h2>3. Test de Redirecciones</h2>
+        <button onclick="testLogin()">Test Directo a Dashboard</button>
+        <button onclick="irARegistro()">Ir a Registro</button>
+        <button onclick="irALogin()">Ir a Login</button>
+        
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        function mostrarResultado(mensaje, tipo = 'info') {
+            const div = document.getElementById('resultado');
+            div.innerHTML = `<div class="resultado ${tipo}">${mensaje}</div>`;
+        }
+
+        function verificarDatos() {
+            const usuarios = localStorage.getItem('usuarios');
+            const tutorActivo = localStorage.getItem('tutorActivo');
+            
+            let mensaje = '<h3>📊 Estado del localStorage:</h3>';
+            mensaje += `<p><strong>Usuarios:</strong> ${usuarios ? 'Encontrado' : 'No encontrado'}</p>`;
+            mensaje += `<p><strong>Tutor Activo:</strong> ${tutorActivo || 'No encontrado'}</p>`;
+            
+            if (usuarios) {
+                const usuariosData = JSON.parse(usuarios);
+                mensaje += `<p><strong>Cantidad de usuarios:</strong> ${usuariosData.length}</p>`;
+                mensaje += '<h4>Usuarios registrados:</h4>';
+                usuariosData.forEach((user, index) => {
+                    mensaje += `<p>${index + 1}. ${user.nombre} - ${user.correo}</p>`;
+                });
+            }
+            
+            // Verificar archivos
+            mensaje += '<h4>🔍 Verificación de archivos necesarios:</h4>';
+            mensaje += '<p>Para que funcione necesitas estos archivos:</p>';
+            mensaje += '<ul>';
+            mensaje += '<li>registro.html (este archivo)</li>';
+            mensaje += '<li>TutorIngreso.html</li>';
+            mensaje += '<li>dashboardTutor.html</li>';
+            mensaje += '</ul>';
+            
+            mostrarResultado(mensaje);
+        }
+
+        function limpiarDatos() {
+            if (confirm('¿Estás seguro? Esto eliminará TODOS los datos.')) {
+                localStorage.clear();
+                mostrarResultado('✅ Todos los datos han sido eliminados', 'success');
+            }
+        }
+
+        function crearUsuarioPrueba() {
+            const usuarioPrueba = {
+                nombre: "Juan Pérez",
+                tipo_id: "DNI",
+                numero_id: "12345678A",
+                correo: "test@email.com",
+                password: "123456",
+                telefono: "+57 300 123 4567",
+                direccion: "Calle 123 #45-67",
+                mascota: {
+                    nombre: "Max",
+                    especie: "Perro",
+                    edad: "3 años",
+                    raza: "Labrador"
+                }
+            };
+
+            // Guardar en localStorage
+            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            
+            // Verificar si ya existe
+            const existeUsuario = usuarios.find(u => u.correo === usuarioPrueba.correo);
+            if (existeUsuario) {
+                mostrarResultado('⚠️ El usuario de prueba ya existe', 'error');
+                return;
+            }
+            
+            usuarios.push(usuarioPrueba);
+            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            
+            // También guardar la mascota en el formato del dashboard
+            const mascotasKey = `mascotas_${usuarioPrueba.correo}`;
+            const mascotas = [{
+                nombre: usuarioPrueba.mascota.nombre,
+                especie: usuarioPrueba.mascota.especie,
+                edad: usuarioPrueba.mascota.edad,
+                raza: usuarioPrueba.mascota.raza
+            }];
+            localStorage.setItem(mascotasKey, JSON.stringify(mascotas));
+            
+            mostrarResultado(`✅ Usuario de prueba creado:
+                <br><strong>Email:</strong> test@email.com
+                <br><strong>Password:</strong> 123456
+                <br><strong>Mascota:</strong> Max (Perro)`, 'success');
+        }
+
+        function testLogin() {
+            // Verificar si existe usuario de prueba
+            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            const usuarioPrueba = usuarios.find(u => u.correo === 'test@email.com');
+            
+            if (!usuarioPrueba) {
+                mostrarResultado('❌ Primero crea el usuario de prueba', 'error');
+                return;
+            }
+            
+            // Establecer sesión directamente
+            localStorage.setItem('tutorActivo', 'test@email.com');
+            mostrarResultado('✅ Sesión establecida. Redirigiendo al dashboard...', 'success');
+            
+            setTimeout(() => {
+                window.location.href = 'dashboardTutor.html';
+            }, 2000);
+        }
+
+        function irARegistro() {
+            window.location.href = 'registro.html';
+        }
+
+        function irALogin() {
+            window.location.href = 'TutorIngreso.html';
+        }
+
+        // Auto-verificar al cargar
+        window.onload = function() {
+            verificarDatos();
+        }
+    </script>
+</body>
+</html>

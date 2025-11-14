@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro - Tutor de Mascota</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <link rel="stylesheet" href="css/main.css"> 
+  
+  <style>
+    /* Estilos específicos para el registro */
+    :root {
+      --naranja: #f28c28;
+      --naranja-oscuro: #d86f00;
+      --rosa-suave: #ffb766;
+      --gris-suave: #f7f4f0;
+      --rojo-error: #dc3545;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #fff8f0 0%, #ffecd1 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    .registro-box {
+      background: white;
+      border: 2px solid var(--naranja);
+      border-radius: 15px;
+      padding: 2.5rem 3rem;
+      width: 100%;
+      max-width: 950px; /* Ajustado para la nueva columna */
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 40px;
+    }
+    .registro-image {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+        background-color: var(--gris-suave); 
+        border-radius: 10px;
+    }
+    .registro-form {
+        flex: 2;
+        min-width: 550px;
+    }
+    .registro-image img {
+        max-width: 80%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+    .registro-box input, .registro-box select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        margin-bottom: 5px; 
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #444;
+    }
+    
+    /* Estilos para el campo de Dirección */
+    .direccion-grid {
+        display: grid;
+        /* Vía | Num1 | L1 | Bis | L2 | Cardinal | # | Num2 | - | Num3 */
+        grid-template-columns: 1.2fr 1fr 0.7fr 0.7fr 0.7fr 0.8fr 0.1fr 1fr 0.1fr 1fr; 
+        gap: 5px;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    .direccion-grid select, .direccion-grid input {
+        width: 100%;
+        margin: 0;
+        padding: 8px 5px;
+        font-size: 0.85rem;
+    }
+    .direccion-grid span {
+        text-align: center;
+        font-weight: bold;
+        color: #666;
+    }
+    .direccion-preview-box {
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        color: #333;
+        margin-top: 5px;
+        min-height: 40px;
+        box-sizing: border-box;
+    }
+    
+    /* Estilos de Validación */
+    .error-message {
+        color: var(--rojo-error);
+        font-size: 0.8rem;
+        margin-top: 2px;
+        min-height: 15px;
+        display: block;
+    }
+    .input-error {
+        border-color: var(--rojo-error) !important;
+    }
+    
+    .password-requirements {
+        background-color: #fff8e1;
+        border: 1px solid #ffcc80;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        margin-top: 10px;
+    }
+    .password-requirements ul {
+        list-style: none;
+        padding: 0;
+        margin: 5px 0 0 0;
+    }
+    .req-item {
+        color: var(--rojo-error);
+    }
+    .req-item.valid {
+        color: #28a745;
+    }
+    
+    .btn-registro {
+        background-color: var(--naranja);
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 5px;
+        width: 100%;
+        margin-top: 20px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s;
+    }
+    .btn-registro:hover {
+        background-color: var(--naranja-oscuro);
+    }
+
+    /* Media Queries para Responsividad */
+    @media (max-width: 992px) {
+      .registro-box {
+        flex-direction: column; /* Apilar imagen y formulario */
+        max-width: 600px; /* Ajustar ancho máximo para pantallas medianas */
+        padding: 2rem;
+      }
+      .registro-image {
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+      .registro-form {
+        min-width: auto; /* Eliminar el min-width fijo */
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .registro-box {
+        padding: 1.5rem;
+      }
+      .direccion-grid {
+        /* Simplificar el grid de dirección para móviles */
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Columnas flexibles */
+        gap: 8px;
+      }
+      .direccion-grid span { display: none; } /* Ocultar los separadores # y - */
+    }
+  </style>
+</head>
+<body>
+    <div class="registro-box">
+        
+        <div class="registro-image">
+            <img src="imagenes/FondoRegistroTutor.jpeg" alt="Tutor y Mascota">
+            <img src="imagenes/LogoOrangeHearth.png" alt="Logo" style="max-width: 150px;">
+            <h3>¡Tu Mascota te lo agradecerá!</h3>
+            <p>Completa el formulario para empezar a gestionar la salud de tu compañero.</p>
+        </div>
+
+        <div class="registro-form">
+            <h2>Registro de Nuevo Tutor</h2>
+
+            <form id="form-registro-usuario">
+                <h4 style="color: var(--naranja-oscuro); margin-top: 20px;">1. Datos Personales (Tutor)</h4>
+                
+                <div class="form-group">
+                    <label for="nombreTutor">Nombre completo *</label>
+                    <input type="text" id="nombreTutor" name="nombre" placeholder="Nombre completo" required pattern="[A-Za-z\s]+" title="Solo se permiten letras y espacios." data-validation="name">
+                    <span class="error-message" id="error-nombreTutor"></span>
+                </div>
+                
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label for="tipoDocumento">Tipo Doc. *</label>
+                        <select id="tipoDocumento" name="tipoDocumento" required>
+                            <option value="">-- Seleccionar --</option>
+                            <option value="CC">Cédula de Ciudadanía (CC)</option>
+                            <option value="TI">Tarjeta de Identidad (TI)</option>
+                            <option value="CE">Cédula de Extranjería (CE)</option>
+                            <option value="PA">Pasaporte (PA)</option>
+                            <option value="OTRO">Otro</option>
+                        </select>
+                        <span class="error-message" id="error-tipoDocumento"></span>
+                    </div>
+                    <div style="flex: 2;">
+                        <label for="numeroDocumento">Número de Documento *</label>
+                        <input type="number" id="numeroDocumento" name="numeroDocumento" placeholder="Sin puntos ni comas" required minlength="2" maxlength="10" data-validation="doc-number">
+                        <span class="error-message" id="error-numeroDocumento"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefonoTutor">Teléfono (Solo 10 dígitos) *</label>
+                    <input type="tel" id="telefonoTutor" name="telefono" placeholder="Ej: 3001234567" required pattern="[0-9]{10}" title="Debe contener exactamente 10 dígitos numéricos." data-validation="phone">
+                    <span class="error-message" id="error-telefonoTutor"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label>Dirección *</label>
+                    <div class="direccion-grid">
+                        <select id="dirVia" name="dirVia" onchange="updateDireccionPreview()">
+                            <option value="">Vía</option>
+                            <option value="Calle">Calle</option>
+                            <option value="Carrera">Carrera</option>
+                            <option value="Avenida">Avenida</option>
+                            <option value="Diagonal">Diagonal</option>
+                            <option value="Transversal">Transversal</option>
+                        </select>
+                        
+                        <input type="number" id="dirNum1" name="dirNum1" placeholder="Núm" oninput="updateDireccionPreview()">
+                        
+                        <input type="text" id="dirLetra1" name="dirLetra1" placeholder="L1" maxlength="2" oninput="updateDireccionPreview()">
+
+                        <select id="dirBis" name="dirBis" onchange="updateDireccionPreview()">
+                            <option value="">Bis</option>
+                            <option value="Bis">Bis</option>
+                        </select>
+                        
+                        <input type="text" id="dirLetra2" name="dirLetra2" placeholder="L2" maxlength="2" oninput="updateDireccionPreview()">
+
+                        <select id="dirCardinal" name="dirCardinal" onchange="updateDireccionPreview()">
+                            <option value="">Cardinal</option>
+                            <option value="Sur">Sur</option>
+                            <option value="Norte">Norte</option>
+                            <option value="Oriente">Oriente</option>
+                            <option value="Occidente">Occidente</option>
+                        </select>
+                        
+                        <span>#</span>
+                        
+                        <input type="number" id="dirNum2" name="dirNum2" placeholder="Núm" oninput="updateDireccionPreview()">
+                        
+                        <span>-</span>
+                        
+                        <input type="number" id="dirNum3" name="dirNum3" placeholder="Placa" oninput="updateDireccionPreview()">
+                    </div>
+
+                    <div class="direccion-preview-box" id="direccion-preview">Dirección (ej. Calle 68 # 63-35)</div>
+                    <input type="text" id="dirAdicional" name="dirAdicional" placeholder="Adicional (Ej: Casa 72, Apartamento 123)" oninput="updateDireccionPreview()" style="margin-top: 10px;">
+                    <span class="error-message" id="error-direccion"></span>
+                    <input type="hidden" id="direccionCompleta" name="direccionCompleta" value="">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="correoTutor">Correo Electrónico *</label>
+                    <input type="email" id="correoTutor" name="correo" placeholder="correo@gmail.com" required data-validation="email">
+                    <span class="error-message" id="error-correoTutor"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="passwordTutor">Contraseña *</label>
+                    <input type="password" id="passwordTutor" name="password" required data-validation="password">
+                    <span class="error-message" id="error-passwordTutor"></span>
+                    
+                    <div class="password-requirements" id="pass-reqs">
+                        Requisitos:
+                        <ul>
+                            <li id="req-length" class="req-item">Mínimo 8 caracteres</li>
+                            <li id="req-upper" class="req-item">Al menos una mayúscula (A-Z)</li>
+                            <li id="req-number" class="req-item">Al menos un número (0-9)</li>
+                            <li id="req-symbol" class="req-item">Al menos un símbolo (!@#$%^&*)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <h4 style="color: var(--naranja-oscuro); margin-top: 25px;">2. Datos de Mascota</h4>
+
+                <div class="form-group">
+                    <label for="nombreMascota">Nombre de tu Mascota *</label>
+                    <input type="text" id="nombreMascota" name="nombreMascota" placeholder="Nombre de tu Mascota" required pattern="[A-Za-z\s]+" title="Solo se permiten letras y espacios." data-validation="name">
+                    <span class="error-message" id="error-nombreMascota"></span>
+                </div>
+                
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label for="especieMascota">Especie *</label>
+                        <select id="especieMascota" name="especieMascota" required onchange="updateBreedOptions()">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Perro">Perro</option>
+                            <option value="Gato">Gato</option>
+                            <option value="Ave">Ave</option>
+                            <option value="Roedor">Roedor</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                        <span class="error-message" id="error-especieMascota"></span>
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="razaMascota">Raza *</label>
+                        <select id="razaMascota" name="razaMascota" required>
+                            <option value="">-- Seleccionar --</option>
+                        </select>
+                        <span class="error-message" id="error-razaMascota"></span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label for="edadMascota">Edad *</label>
+                        <input type="number" id="edadMascota" name="edadMascota" placeholder="Cantidad" required min="1" data-validation="number">
+                        <span class="error-message" id="error-edadMascota"></span>
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="unidadEdad">Unidad *</label>
+                        <select id="unidadEdad" name="unidadEdad" required>
+                            <option value="Años">Años</option>
+                            <option value="Meses">Meses</option>
+                            <option value="Días">Días</option>
+                        </select>
+                        <span class="error-message" id="error-unidadEdad"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-registro">Crear Cuenta y Registrar Mascota</button>
+                <p style="margin-top: 15px; text-align: center;">¿Ya tienes cuenta? <a href="login-rol.html" style="color: var(--naranja);">Ingresa aquí</a></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        
+        // ===========================================
+        // 🐾 Datos de Razas por Especie
+        // ===========================================
+        const RACES_BY_SPECIES = {
+            'Perro': ['Labrador Retriever', 'Pastor Alemán', 'Golden Retriever', 'Bulldog', 'Poodle', 'Chihuahua', 'Mestizo' , 'Criollo', 'Otro (especificar en Adicional)'],
+            'Gato': ['Siamés', 'Persa', 'Maine Coon', 'Bengala', 'Ragdoll', 'Sphynx', 'Mestizo' , 'Criollo' , 'Otro (especificar en Adicional)'],
+            'Ave': ['Periquito', 'Canario', 'Cacatúa', 'Loro', 'Agapornis', 'Torcaza', 'Otro (especificar en Adicional)'],
+            'Roedor': ['Hámster', 'Conejillo de Indias', 'Conejo', 'Jerbo', 'Rata Doméstica', 'Otro (especificar en Adicional)'],
+            'Otro': ['No Aplica / Otra (especificar en Adicional)']
+        };
+
+        // ===========================================
+        // LÓGICA DE VALIDACIÓN Y EVENTOS
+        // ===========================================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('form-registro-usuario');
+
+            // --- Funciones de Utilidad ---
+            
+            /** Muestra u oculta un mensaje de error y marca el input */
+            function setFieldError(input, message) {
+                // Obtener el ID del elemento a mostrar el error
+                const errorId = input.id ? `error-${input.id}` : (input.name === 'tipoDocumento' ? 'error-tipoDocumento' : '');
+                const errorElement = document.getElementById(errorId);
+                
+                if (message) {
+                    input.classList.add('input-error');
+                    if(errorElement) errorElement.textContent = message;
+                    return false;
+                } else {
+                    input.classList.remove('input-error');
+                    if(errorElement) errorElement.textContent = '';
+                    return true;
+                }
+            }
+            
+            // --- Validaciones Específicas (Se mantienen) ---
+
+            /** Valida Nombre (solo letras y espacios) y Nombre de Mascota */
+            function validateNameField(input) {
+                const value = input.value.trim();
+                const regex = /^[A-Za-zñÑáéíóúÁÉÍÓÚ\s]+$/;
+                if (!value) return setFieldError(input, 'Este campo es obligatorio.');
+                if (!regex.test(value)) return setFieldError(input, 'Solo se permiten letras y espacios.');
+                return setFieldError(input, '');
+            }
+
+            /** Valida Número de Documento (2 a 10 dígitos numéricos) */
+            function validateDocNumber(input) {
+                const value = input.value.trim();
+                const regex = /^\d{2,10}$/; // 2 a 10 dígitos
+                if (!value) return setFieldError(input, 'Este campo es obligatorio.');
+                if (!regex.test(value)) return setFieldError(input, 'Debe tener entre 2 y 10 dígitos numéricos.');
+                return setFieldError(input, '');
+            }
+
+            /** Valida Teléfono (Exactamente 10 dígitos) */
+            function validatePhone(input) {
+                const value = input.value.trim();
+                const regex = /^\d{10}$/; // Exactamente 10 dígitos
+                if (!value) return setFieldError(input, 'Este campo es obligatorio.');
+                if (!regex.test(value)) return setFieldError(input, 'Debe ser exactamente 10 dígitos numéricos.');
+                return setFieldError(input, '');
+            }
+
+            /** Valida Correo Electrónico (contiene @) */
+            function validateEmail(input) {
+                const value = input.value.trim();
+                const regex = /^\S+@\S+\.\S+$/; // Patrón básico para email
+                if (!value) return setFieldError(input, 'Este campo es obligatorio.');
+                if (!regex.test(value)) return setFieldError(input, 'Debe ser un correo electrónico válido (ej. correo@dominio.com).');
+                return setFieldError(input, '');
+            }
+
+            /** Valida Contraseña (Longitud, Mayúsculas, Números, Símbolos) */
+            function validatePassword(input) {
+                const value = input.value;
+                let isValid = true;
+
+                const reqLength = value.length >= 8;
+                const reqUpper = /[A-Z]/.test(value);
+                const reqNumber = /[0-9]/.test(value);
+                const reqSymbol = /[!@#$%^&*]/.test(value);
+
+                document.getElementById('req-length').classList.toggle('valid', reqLength);
+                document.getElementById('req-upper').classList.toggle('valid', reqUpper);
+                document.getElementById('req-number').classList.toggle('valid', reqNumber);
+                document.getElementById('req-symbol').classList.toggle('valid', reqSymbol);
+
+                if (!(reqLength && reqUpper && reqNumber && reqSymbol)) {
+                    isValid = false;
+                    setFieldError(input, 'La contraseña no cumple con todos los requisitos.');
+                } else {
+                    setFieldError(input, '');
+                }
+
+                return isValid;
+            }
+
+            // --- Lógica del Campo de Dirección (Se mantiene) ---
+
+            window.updateDireccionPreview = function() {
+                const via = document.getElementById('dirVia').value.trim();
+                const num1 = document.getElementById('dirNum1').value.trim();
+                const letra1 = document.getElementById('dirLetra1').value.trim().toUpperCase();
+                // Normaliza BIS: si el valor es vacío o literalmente "Bis" (placeholder), no se incluye
+                let bis = document.getElementById('dirBis').value.trim();
+                if (!bis || bis.toLowerCase() === 'bis') bis = '';
+                const letra2 = document.getElementById('dirLetra2').value.trim().toUpperCase();
+                const cardinal = document.getElementById('dirCardinal').value.trim();
+                const num2 = document.getElementById('dirNum2').value.trim();
+                const num3 = document.getElementById('dirNum3').value.trim();
+                const adicional = document.getElementById('dirAdicional').value.trim();
+                const previewBox = document.getElementById('direccion-preview');
+                const direccionCompletaInput = document.getElementById('direccionCompleta');
+                
+                let addressParts = [];
+
+                // 1. Vía principal y componentes
+                if (via && num1) {
+                    let part = `${via} ${num1}`;
+                    if (letra1) part += ` ${letra1}`;
+                    if (bis) part += ` ${bis}`;
+                    if (letra2) part += ` ${letra2}`;
+                    if (cardinal) part += ` ${cardinal}`;
+                    
+                    addressParts.push(part);
+                } else if (via) {
+                    addressParts.push(via);
+                }
+
+                // 2. Número de placa (con # y guion)
+                if (num2 && num3) {
+                    // Si hay componentes de vía, se añade #
+                    if (addressParts.length > 0) {
+                        addressParts.push(`# ${num2}-${num3}`);
+                    } else { // Si no hay vía principal, solo se pone el número/guion
+                        addressParts.push(`No. ${num2}-${num3}`);
+                    }
+                } else if (num2) {
+                    if (addressParts.length > 0) {
+                        addressParts.push(`# ${num2}`);
+                    } else {
+                        addressParts.push(`No. ${num2}`);
+                    }
+                }
+                
+                // Ensambla y limpia espacios repetidos
+                let previewText = addressParts.join(' ').replace(/\s{2,}/g, ' ').trim();
+
+                // 3. Adicional
+                if (adicional) {
+                    if (previewText) {
+                        previewText += `, ${adicional}`;
+                    } else {
+                        previewText = adicional;
+                    }
+                }
+                
+                // Actualizar la previsualización y el campo oculto
+                previewBox.textContent = previewText || "Dirección (ej. Calle 68 # 63-35)";
+                direccionCompletaInput.value = previewText;
+
+                // Validación visual rápida (para quitar el error si se corrige)
+                if (previewText && previewText !== "Dirección (ej. Calle 68 # 63-35)") {
+                    previewBox.classList.remove('input-error');
+                    document.getElementById('error-direccion').textContent = '';
+                }
+            }
+
+            // --- Lógica del Campo de Raza (Se mantiene) ---
+            window.updateBreedOptions = function() {
+                const especieSelect = document.getElementById('especieMascota');
+                const razaSelect = document.getElementById('razaMascota');
+                const selectedEspecie = especieSelect.value;
+
+                // 1. Limpiar opciones existentes
+                razaSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+
+                // 2. Poblar opciones basadas en la especie
+                if (selectedEspecie && RACES_BY_SPECIES[selectedEspecie]) {
+                    const breeds = RACES_BY_SPECIES[selectedEspecie];
+                    breeds.forEach(breed => {
+                        const option = document.createElement('option');
+                        option.value = breed;
+                        option.textContent = breed;
+                        razaSelect.appendChild(option);
+                    });
+                }
+                
+                // 3. Limpiar cualquier error de validación previo en el campo de raza
+                setFieldError(razaSelect, '');
+            }
+            
+            // Llama a las funciones al cargar para establecer el texto inicial y las opciones de raza
+            updateDireccionPreview();
+            updateBreedOptions(); 
+            
+            // --- Asignación de Event Listeners (Se mantiene) ---
+            
+            // Mapeo de validadores para los inputs
+            const validators = {
+                'nombreTutor': validateNameField,
+                'numeroDocumento': validateDocNumber,
+                'telefonoTutor': validatePhone,
+                'correoTutor': validateEmail,
+                'passwordTutor': validatePassword,
+                'nombreMascota': validateNameField,
+                'edadMascota': (input) => setFieldError(input, input.value < 1 ? 'La edad debe ser mayor a cero.' : '')
+            };
+
+            // Aplica validación al perder el foco (blur)
+            Object.keys(validators).forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('blur', () => validators[id](input));
+                    // Para la contraseña, también valida en tiempo real
+                    if (id === 'passwordTutor') {
+                        input.addEventListener('input', () => validatePassword(input));
+                    }
+                }
+            });
+
+            // Adicional: Escuchar todos los inputs de dirección para validación en blur
+            const dirInputs = document.querySelectorAll('.direccion-grid input, .direccion-grid select, #dirAdicional');
+            dirInputs.forEach(input => {
+                input.addEventListener('blur', () => {
+                    // Solo revisa la dirección completa al hacer blur en cualquier parte
+                    updateDireccionPreview(); 
+                });
+            });
+            
+            // --- Manejo del Formulario de Envío (Modificado para redirección) ---
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                let isFormValid = true;
+                let firstInvalidField = null;
+
+                // Actualizar la dirección por última vez antes de validar
+                updateDireccionPreview(); 
+
+                // 1. Validar campos obligatorios con validación específica
+                Object.keys(validators).forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input && !validators[id](input)) {
+                        isFormValid = false;
+                        if (!firstInvalidField) firstInvalidField = input;
+                    }
+                });
+
+                // 2. Validar campos select obligatorios (Tipo Doc, Especie, Raza)
+                const requiredSelects = form.querySelectorAll('select[required]');
+                requiredSelects.forEach(select => {
+                    if (!select.value) {
+                        setFieldError(select, 'Este campo es obligatorio.');
+                        isFormValid = false;
+                        if (!firstInvalidField) firstInvalidField = select;
+                    } else {
+                        setFieldError(select, '');
+                    }
+                });
+                
+                // 3. Validar Dirección (Es obligatorio)
+                const direccionCompletaInput = document.getElementById('direccionCompleta');
+                const previewBox = document.getElementById('direccion-preview');
+                const finalDireccion = direccionCompletaInput.value.trim();
+                
+                if (!finalDireccion || finalDireccion === "Dirección (ej. Calle 68 # 63-35)") {
+                    isFormValid = false;
+                    previewBox.classList.add('input-error'); 
+                    document.getElementById('error-direccion').textContent = 'La dirección es obligatoria. Por favor, rellena al menos una parte válida de la dirección.';
+                    if (!firstInvalidField) firstInvalidField = previewBox;
+                } else {
+                    previewBox.classList.remove('input-error');
+                    document.getElementById('error-direccion').textContent = '';
+                }
+
+                
+                // Si la validación pasa, simula el registro y REDIRECCIONA
+                if (isFormValid && finalDireccion && finalDireccion !== "Dirección (ej. Calle 68 # 63-35)") {
+                    const payload = {
+                        nombreCompleto: document.getElementById('nombreTutor').value,
+                        tipoDocumento: document.getElementById('tipoDocumento').value,
+                        numeroDocumento: document.getElementById('numeroDocumento').value,
+                        telefono: document.getElementById('telefonoTutor').value,
+                        correo: document.getElementById('correoTutor').value,
+                        password: document.getElementById('passwordTutor').value,
+                        direccion: {
+                            via: document.getElementById('dirVia').value,
+                            numeroPrincipal: document.getElementById('dirNum1').value,
+                            letraUno: document.getElementById('dirLetra1').value,
+                            bis: document.getElementById('dirBis').value,
+                            letraDos: document.getElementById('dirLetra2').value,
+                            cardinal: document.getElementById('dirCardinal').value,
+                            numeroSecundario: document.getElementById('dirNum2').value,
+                            numeroPlaca: document.getElementById('dirNum3').value,
+                            adicional: document.getElementById('dirAdicional').value,
+                            completo: finalDireccion
+                        },
+                        mascota: {
+                            nombre: document.getElementById('nombreMascota').value,
+                            especie: document.getElementById('especieMascota').value,
+                            raza: document.getElementById('razaMascota').value,
+                            edadValor: parseInt(document.getElementById('edadMascota').value, 10),
+                            edadUnidad: document.getElementById('unidadEdad').value
+                        }
+                    };
+
+                    try {
+                        const response = await fetch('/api/tutores', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const data = await response.json().catch(() => null);
+
+                        if (!response.ok) {
+                            const errorMessage = data?.message || 'No se pudo completar el registro.';
+                            alert(`❌ ${errorMessage}`);
+                            return;
+                        }
+
+                        alert('✅ ¡Registro exitoso! Tu cuenta ha sido creada y tu mascota registrada.');
+                        form.reset();
+                        updateDireccionPreview();
+                        window.location.href = "login-rol.html";
+                    } catch (error) {
+                        console.error('Error al registrar tutor:', error);
+                        alert('❌ No se pudo contactar al servidor. Intenta nuevamente en unos minutos.');
+                    }
+                } else {
+                    // Enfocar el primer campo inválido
+                    if (firstInvalidField) {
+                        firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Si es la caja de dirección, enfocar el primer input del grid
+                        if (firstInvalidField === previewBox) {
+                            document.getElementById('dirVia').focus();
+                        } else {
+                            firstInvalidField.focus();
+                        }
+                    }
+                    alert('Por favor, corrija los errores en el formulario antes de continuar.');
+                }
+            });
+        });
+    </script>
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+from pathlib import Path
+
+# Generar el nuevo contenido mejorado para usuario.html
+nuevo_usuario_html = """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Usuario - ORANGE HEARTH</title>
+  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+  <header>
+    <h1>ORANGE HEARTH</h1>
+    <div class="logout">
+      <a href="logout.html">Cerrar Sesión</a>
+    </div>
+  </header>
+
+  <section class="banner">
+    <h2>¡Hola, [NombreUsuario]! Bienvenido/a</h2>
+  </section>
+
+  <main class="container usuario-dashboard">
+    <section class="mascotas-carousel">
+      <h3>Tus Mascotas</h3>
+      <div class="carousel">
+        <button class="carousel-btn prev"><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="carousel-track">
+          <div class="mascota-card">
+            <h4>Motas</h4>
+            <p>Especie: Perro</p>
+            <p>Edad: 5 años</p>
+            <button class="btn-ver">Ver Historia Clínica</button>
+            <button class="btn-agendar">Agendar Cita</button>
+          </div>
+          <div class="mascota-card">
+            <h4>Angel</h4>
+            <p>Especie: Gato</p>
+            <p>Edad: 10 años</p>
+            <button class="btn-ver">Ver Historia Clínica</button>
+            <button class="btn-agendar">Agendar Cita</button>
+          </div>
+          <div class="mascota-card">
+            <h4>Emily</h4>
+            <p>Especie: Gato</p>
+            <p>Edad: 15 años</p>
+            <button class="btn-ver">Ver Historia Clínica</button>
+            <button class="btn-agendar">Agendar Cita</button>
+          </div>
+        </div>
+        <button class="carousel-btn next"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </section>
+
+    <section class="acciones-box">
+      <h3>¿Qué necesitas hoy?</h3>
+      <div class="acciones-grid">
+        <button><i class="fa-solid fa-calendar-check"></i><span>Cita General</span></button>
+        <button><i class="fa-solid fa-scissors"></i><span>Estética</span></button>
+        <button><i class="fa-solid fa-scalpel"></i><span>Cirugía</span></button>
+        <button><i class="fa-solid fa-syringe"></i><span>Vacunación</span></button>
+        <button><i class="fa-solid fa-pills"></i><span>Desparasitación</span></button>
+        <button><i class="fa-solid fa-dove"></i><span>Eutanasia</span></button>
+        <button><i class="fa-solid fa-bone"></i><span>Alimentos</span></button>
+        <button><i class="fa-solid fa-capsules"></i><span>Medicamentos</span></button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

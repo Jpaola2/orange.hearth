@@ -1,0 +1,12 @@
+package com.orangehearth.OrangeHearth.dto.request;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public record SolicitudInicioSesionTutor(
+	@Email(message = "Correo inválido")
+	@NotBlank
+	String correo,
+	@NotBlank
+	String password
+) { }

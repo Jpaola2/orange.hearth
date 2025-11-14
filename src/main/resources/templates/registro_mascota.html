@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Mascota</title>
+  <style>
+    body {
+      background: #fff8f0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .formulario {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    .formulario h2 {
+      text-align: center;
+      color: #f28c28;
+    }
+    .formulario input {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .formulario button {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.7rem;
+      background-color: #f28c28;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .formulario button:hover {
+      background-color: #d97706;
+    }
+  </style>
+</head>
+<body>
+  <div class="formulario">
+    <h2>Registrar Mascota</h2>
+    <form id="form-mascota">
+      <input type="text" id="nombre" placeholder="Nombre de la mascota" required />
+      <input type="text" id="especie" placeholder="Especie" required />
+      <input type="text" id="raza" placeholder="Raza" required /> <!-- Campo agregado -->
+      <input type="text" id="edad" placeholder="Edad" required />
+      <button type="submit">Registrar</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("form-mascota").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const correoTutor = localStorage.getItem("tutorActivo");
+      if (!correoTutor) {
+        alert("No se encontró el tutor activo.");
+        return;
+      }
+
+      const nombre = document.getElementById("nombre").value;
+      const especie = document.getElementById("especie").value;
+      const raza = document.getElementById("raza").value;
+      const edad = document.getElementById("edad").value;
+
+      const nuevaMascota = { nombre, especie, raza, edad };
+      const clave = `mascotas_${correoTutor}`;
+      const lista = JSON.parse(localStorage.getItem(clave)) || [];
+
+      lista.push(nuevaMascota);
+      localStorage.setItem(clave, JSON.stringify(lista));
+      localStorage.setItem("mascotaSeleccionada", nombre);
+
+      window.location.href = "dashboardTutor.html";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+/* ========================================= */
+/* 1. PALETA DE COLORES Y FUENTES (Tiernas)  */
+/* ========================================= */
+:root {
+  --naranja: #f28c28; /* Naranja principal */
+  --naranja-oscuro: #d86f00; /* Naranja para sombras/hover */
+  --naranja-suave: #ffb766; /* Tono más suave */
+  --gris-oscuro: #2d2f2f; /* Texto principal */
+  --gris-suave: #f7f4f0; /* Fondo general (crema) */
+  --blanco: #ffffff; /* Elementos blancos */
+  --rosa-suave: #ffe0e6; /* Toque tierno */
+}
+
+/* Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--gris-suave);
+  color: var(--gris-oscuro);
+}
+
+/* ========================================= */
+/* 2. SIDEBAR Y MENÚ TOGGLE                  */
+/* ========================================= */
+.menu-toggle {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: var(--blanco);
+  border: 2px solid var(--naranja);
+  border-radius: 50%;
+  padding: 10px 15px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 2000;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 280px;
+  height: 100vh;
+  background: var(--naranja);
+  color: white;
+  padding: 2rem 1rem;
+  box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  transition: left 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar .close-btn {
+  text-align: right;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--blanco);
+}
+
+.sidebar h2 {
+  margin: 2rem 0 1rem;
+  text-align: center;
+  color: var(--blanco);
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s;
+}
+
+.sidebar ul li a {
+  color: var(--blanco);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 8px;
+  width: 100%;
+  gap: 10px;
+}
+
+.sidebar ul li a:hover {
+  background-color: var(--naranja-oscuro);
+}
+
+/* Estilo para el botón de Ingresar en el sidebar (para destacar) */
+.btn-sidebar-ingreso {
+    font-weight: 900 !important;
+    background-color: var(--naranja-oscuro);
+}
+
+
+/* ========================================= */
+/* 3. HERO SECTION                           */
+/* ========================================= */
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4rem 5% 2rem;
+  background: linear-gradient(to right, var(--gris-suave), var(--rosa-suave));
+  border-bottom-left-radius: 50px;
+  border-bottom-right-radius: 50px;
+}
+
+.hero-text {
+  flex: 1;
+  min-width: 280px;
+  padding-right: 2rem;
+  animation: fadeIn 1s ease-out;
+  z-index: 10;
+}
+
+.hero-text h1 {
+  font-size: 3rem;
+  color: var(--naranja-oscuro);
+  margin-bottom: 1rem;
+}
+
+.hero-text p {
+  font-size: 1.1rem;
+  color: #444;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+  text-align: justify;
+}
+
+.hero-logo {
+  flex: 1;
+  text-align: center;
+  min-width: 280px;
+}
+
+.hero-logo .logo-box {
+  background: var(--blanco);
+  padding: 3rem;
+  border-radius: 120px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+  display: inline-block;
+}
+
+.hero-logo img {
+  width: 240px;
+  height: auto;
+}
+
+/* ========================================= */
+/* 4. ROLES/CTA SECTION (SIMPLIFICADA)       */
+/* ========================================= */
+.roles-section {
+  padding: 3rem 5%;
+  text-align: center;
+}
+
+.roles-section h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--gris-oscuro);
+}
+
+.login-cta-box {
+    background: var(--blanco);
+    border: 3px solid var(--naranja-suave);
+    border-radius: 25px;
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    box-shadow: 0 8px 20px rgba(242, 140, 40, 0.1);
+}
+
+.login-cta-box p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+/* Botón de Ingreso Único (Estilo CTA Primario) */
+.btn-primary-roles {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--naranja) 0%, var(--naranja-oscuro) 100%);
+    color: var(--blanco);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 15px rgba(242, 140, 40, 0.4);
+}
+
+.btn-primary-roles:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(242, 140, 40, 0.6);
+}
+
+
+/* ========================================= */
+/* 5. INFO SECTIONS                          */
+/* ========================================= */
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  padding: 40px 5%;
+  background-color: var(--gris-suave);
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--blanco);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  flex-wrap: wrap;
+}
+
+.info-row.reverse {
+  flex-direction: row-reverse;
+}
+
+.info-text {
+  flex: 1 1 50%;
+  padding: 20px;
+}
+
+.info-text h3 {
+  margin-top: 0;
+  color: var(--naranja-oscuro);
+  font-size: 1.8em;
+}
+
+.info-image {
+  flex: 1 1 40%;
+  text-align: center;
+}
+
+.info-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Media Queries para adaptabilidad */
+@media (max-width: 768px) {
+  .hero, .info-row {
+    flex-direction: column-reverse;
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .info-row.reverse {
+    flex-direction: column-reverse;
+  }
+
+  .hero-text {
+    padding: 0;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* ========================================= */
+/* 6. ESTILOS ESPECÍFICOS DE LOGIN-ROL.HTML  */
+/* ========================================= */
+
+/* Enlace Volver al Inicio (Esquina Superior Izquierda) */
+.back-to-home-btn {
+    position: fixed; /* Usamos fixed para que quede fuera del flujo y fijo en la esquina */
+    top: 30px;
+    left: 30px;
+    color: var(--naranja-oscuro);
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--naranja-suave);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 10px 15px;
+    border-radius: 50px; /* Redondeado para hacerlo más "tierno" */
+    transition: all 0.3s;
+    z-index: 100;
+}
+
+.back-to-home-btn:hover {
+    background-color: var(--naranja);
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Enlaces de Ayuda y Soporte */
+.login-help-links {
+    margin: 25px 0 10px;
+    font-size: 0.95rem;
+}
+
+.login-help-links a {
+    color: var(--naranja);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.login-help-links a:hover {
+    color: var(--naranja-oscuro);
+    text-decoration: underline;
+}
+
+.login-help-links span {
+    color: #ccc;
+    margin: 0 10px;
+}
+
+
+/* ========================================= */
+/* 7. ESTILOS DE MODAL (Ventanas Emergentes) */
+/* ========================================= */
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    z-index: 3000; /* Asegura que esté por encima de todo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5); /* Fondo oscuro semitransparente */
+    padding-top: 60px;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 30px;
+    border: 3px solid var(--naranja);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 450px;
+    text-align: left;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+    position: relative;
+    animation-name: animatetop;
+    animation-duration: 0.4s;
+}
+
+.modal-content h3 {
+    color: var(--naranja-oscuro);
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: #333;
+    text-decoration: none;
+}
+
+/* Estilos de información de soporte */
+.support-info {
+    border-left: 4px solid var(--naranja-suave);
+    padding-left: 15px;
+    margin: 15px 0;
+}
+.support-info p {
+    margin: 8px 0;
+    color: #555;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+}
+
+.support-info i {
+    color: var(--naranja);
+}
+
+.note {
+    margin-top: 25px;
+    padding: 10px;
+    background-color: #fff4e6; /* Fondo más suave para la nota */
+    border: 1px dashed var(--naranja-suave);
+    border-radius: 10px;
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+/* Estilos de Formulario en Modal */
+.input-modal {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 2px solid var(--rosa-suave);
+    border-radius: 10px;
+}
+
+.btn-modal-submit {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--naranja) 0%, var(--naranja-oscuro) 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.btn-modal-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(242, 140, 40, 0.4);
+}
+
+/* Animación de entrada del modal */
+@keyframes animatetop {
+    from {top:-300px; opacity:0} 
+    to {top:5%; opacity:1}
+}

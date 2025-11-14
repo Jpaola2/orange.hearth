@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Orange Hearth</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<div id="inicio"></div>
+  <div class="menu-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="close-btn" onclick="toggleSidebar()">✖</div>
+    <h2>Orange Hearth</h2>
+    <ul>
+      <li><a href="#inicio"><i class="fas fa-home"></i> Inicio</a></li>
+      <li><a href="#servicios"><i class="fas fa-stethoscope"></i> Servicios</a></li>
+      <li><a href="#planes"><i class="fas fa-file-medical"></i> Planes</a></li>
+      <li><a href="#contacto"><i class="fas fa-envelope"></i> Contacto</a></li>
+      
+      <li><a href="login-rol.html" class="btn-sidebar-ingreso"><i class="fas fa-sign-in-alt"></i> INGRESAR</a></li>
+    </ul>
+</aside>
+
+
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Bienvenido a OrangeHearth</h1>
+      <p>Tu espacio digital para el cuidado animal. Con nuestra plataforma, veterinarios y tutores pueden gestionar citas, acceder a historiales y mucho más.</p>
+      <p>Todo lo que necesitas para cuidar a tus mascotas, en un solo lugar.</p>
+    </div>
+    <div class="hero-logo">
+      <div class="logo-container-white-bg">
+        <img src="imagenes/LogoOrangeHearth.png" alt="Logo Orange Hearth" style="max-width: 200px;">
+      </div>
+    </div>
+  </section>
+
+  <section class="roles-section">
+    <h2>Si quieres interactuar con la gestión de citas, por favor ingresa.</h2>
+    <div class="login-cta-box">
+        <p>Accede a tu perfil de Tutor, Veterinario o Administrador para empezar a gestionar citas y la salud de tus mascotas.</p>
+        
+        <a href="login-rol.html" class="btn-primary-roles">
+            <i class="fas fa-sign-in-alt"></i> Ingresar al Sistema
+        </a>
+    </div>
+  </section>
+
+  <section class="info-section">
+    <div class="info-row" id="servicios">
+      <div class="info-text">
+        <h3>Nuestros servicios</h3>
+        <p>OrangeHearth ofrece servicios dinámicos para el agendamiento de citas médicas veterinarias, facilitando tanto a los tutores como a las clínicas la gestión...</p>
+      </div>
+      <div class="info-image">
+        <img src="imagenes/QueSomos.png" alt="Ilustración Orange Hearth">
+      </div>
+    </div>
+
+    <div class="info-row reverse" id="planes">
+      <div class="info-image">
+        <img src="imagenes/Precios.png" alt="Planes y precios">
+      </div>
+      <div class="info-text">
+        <h3>Planes y costos</h3>
+        <p>Tenemos planes flexibles para clínicas y profesionales:<br>
+        - Básico: $50.000/mes<br>
+        - Profesional: $90.000/mes<br>
+        - Empresarial: $150.000/mes</p>
+      </div>
+    </div>
+
+    <div class="info-row" id="contacto">
+      <div class="info-text">
+        <h3>Contacto</h3>
+        <p>Estamos para ayudarte:<br>
+        📞 WhatsApp: +57 301 555 1234<br>
+        📧 Correo: contacto@orangehearth.com<br>
+        🐾 Instagram: @orangehearth_vet</p>
+      </div>
+      <div class="info-image">
+        <img src="imagenes/contacto.png" alt="Imagen de contacto">
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

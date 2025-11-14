@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Veterinario - Orange Hearth</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    :root {
+      --naranja: #f28c28;
+      --naranja-oscuro: #d86f00;
+      --azul-oscuro: #2d2f56;
+      --blanco: #fff;
+      --fondo: #f9f9f9;
+      --gris-claro: #f8f9fa;
+      --gris: #6c757d;
+      --verde: #28a745;
+      --azul: #007bff;
+      --rojo: #dc3545;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--fondo);
+      display: flex;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, var(--azul-oscuro), #1a1b3d);
+      color: white;
+      height: 100vh;
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .logo-white-bg {
+        background-color: white;
+        border-radius: 50%;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .logo-white-bg img {
+        height: 40px;
+        width: auto;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      flex-grow: 1;
+    }
+
+    .sidebar li {
+      margin: 0.7rem 0;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: rgba(255,255,255,0.1);
+      transform: translateX(5px);
+    }
+    .sidebar i {
+      width: 20px;
+    }
+
+    .sidebar .logout-link {
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .main {
+      flex-grow: 1;
+      padding: 2rem;
+    }
+
+    .section {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      display: none;
+    }
+    .section.active { display: block; }
+    .section h3 {
+      color: var(--azul-oscuro);
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .welcome-header {
+      background: linear-gradient(135deg, var(--azul-oscuro), #4e5294);
+      color: white;
+      padding: 2rem;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+    }
+    .welcome-header h1 { margin: 0; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--blanco);
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      border-bottom: 5px solid var(--azul);
+      box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    }
+    .stat-number { font-size: 2.5rem; font-weight: bold; color: var(--azul-oscuro); }
+    .stat-label { font-size: 1rem; color: var(--gris); }
+
+    .appointments-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    .appointments-table th, .appointments-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    .appointments-table thead {
+      background-color: var(--azul-oscuro);
+      color: white;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background: #f8f9fa; 
+        padding: 1rem; 
+        border-radius: 10px; 
+        margin-bottom: 1.5rem;
+    }
+    .filter-grid input {
+        width: 100%; 
+        padding: 0.6rem; 
+        border-radius: 5px; 
+        border: 1px solid #ddd;
+    }
+
+    .btn {
+        padding: 0.7rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        background-color: var(--naranja);
+        color: white;
+    }
+    .btn-secondary {
+      background-color: var(--gris-claro);
+      color: var(--azul-oscuro);
+      border: 1px solid #ddd;
+    }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: white;
+    }
+    .badge.programada { background-color: var(--azul); }
+    .badge.confirmada { background-color: var(--verde); }
+    .badge.completada { background-color: var(--naranja); }
+    .badge.cancelada { background-color: var(--gris); }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <h2>
+      <div class="logo-white-bg">
+        <img src="imagenes/LogoOrangeHearth.png" alt="Logo">
+      </div>
+      <span>OrangeHearth</span>
+    </h2>
+    <ul>
+      <li><a href="#" onclick="showSection('inicio')" class="active"><i class="fas fa-home"></i> Inicio</a></li>
+      <li><a href="#" onclick="showSection('agenda')"><i class="fas fa-calendar-alt"></i> Mi Agenda</a></li>
+      <li><a href="#" onclick="showSection('pacientes')"><i class="fas fa-paw"></i> Pacientes</a></li>
+      <li><a href="#" onclick="showSection('reportes')"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+    </ul>
+    <div class="logout-link">
+      <a href="#" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section id="inicio" class="section active">
+      <div class="welcome-header">
+        <h1 id="bienvenida">Cargando...</h1>
+        <p>Aquí tienes un resumen de tu jornada.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="citasHoy">0</div>
+          <div class="stat-label">Citas para Hoy</div>
+        </div>
+        <div class="stat-card" style="border-bottom-color: var(--verde);">
+          <div class="stat-number" id="citasCompletadas">0</div>
+          <div class="stat-label">Citas Completadas (Mes)</div>
+        </div>
+        <div class="stat-card" style="border-bottom-color: var(--naranja);">
+          <div class="stat-number" id="pacientesAtendidos">0</div>
+          <div class="stat-label">Pacientes Únicos (Mes)</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="agenda" class="section">
+      <h3><i class="fas fa-calendar-alt"></i> Mi Agenda de Citas</h3>
+      <div class="filter-grid">
+        <input type="date" id="filtro-fecha-agenda" onchange="cargarAgenda()">
+        <select id="filtro-estado-agenda" onchange="cargarAgenda()">
+          <option value="">Todos los Estados</option>
+          <option value="programada">Programada</option>
+          <option value="confirmada">Confirmada</option>
+          <option value="completada">Completada</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+      <table class="appointments-table">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Paciente</th>
+            <th>Tutor</th>
+            <th>Motivo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="agenda-body"></tbody>
+      </table>
+    </section>
+
+    <section id="pacientes" class="section">
+      <h3><i class="fas fa-paw"></i> Búsqueda de Pacientes</h3>
+      <div class="filter-grid">
+        <input type="text" id="search-paciente" placeholder="Buscar por nombre de mascota..." onkeyup="cargarPacientes()">
+        <input type="text" id="search-tutor" placeholder="Buscar por nombre o email del tutor..." onkeyup="cargarPacientes()">
+      </div>
+      <table class="appointments-table">
+        <thead>
+          <tr>
+            <th>Mascota</th>
+            <th>Especie</th>
+            <th>Raza</th>
+            <th>Tutor</th>
+            <th>Contacto Tutor</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="pacientes-body"></tbody>
+      </table>
+    </section>
+
+    <section id="reportes" class="section">
+      <h3><i class="fas fa-chart-bar"></i> Generación de Reportes</h3>
+      <p>Genera un reporte de las citas que has atendido en un rango de fechas.</p>
+      <div class="filter-grid">
+        <div>
+          <label>Fecha de Inicio</label>
+          <input type="date" id="reporte-fecha-inicio">
+        </div>
+        <div>
+          <label>Fecha de Fin</label>
+          <input type="date" id="reporte-fecha-fin">
+        </div>
+      </div>
+      <button class="btn" onclick="generarReporte()">
+        <i class="fas fa-file-alt"></i> Generar Reporte de Citas
+      </button>
+    </section>
+  </main>
+
+  <script>
+    let vetActivo = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      vetActivo = JSON.parse(localStorage.getItem("veterinarioActivo"));
+      if (!vetActivo) {
+        alert("Debes iniciar sesión como veterinario.");
+        window.location.href = "login-rol.html";
+        return;
+      }
+      
+      document.getElementById("bienvenida").innerText = `¡Bienvenido, ${vetActivo.nombre}!`;
+      document.getElementById('filtro-fecha-agenda').valueAsDate = new Date();
+
+      showSection('inicio');
+    });
+
+    function showSection(sectionId) {
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(sectionId).classList.add('active');
+
+      document.querySelectorAll('.sidebar a').forEach(link => link.classList.remove('active'));
+      document.querySelector(`.sidebar a[onclick*="${sectionId}"]`).classList.add('active');
+
+      // Cargar datos al mostrar la sección
+      if (sectionId === 'inicio') cargarResumen();
+      if (sectionId === 'agenda') cargarAgenda();
+      if (sectionId === 'pacientes') cargarPacientes();
+    }
+
+    function cargarResumen() {
+      const todasLasCitas = JSON.parse(localStorage.getItem('citas')) || [];
+      const citasDelVet = todasLasCitas.filter(c => c.veterinario === vetActivo.nombre);
+      const hoy = new Date().toISOString().slice(0, 10);
+
+      const citasHoy = citasDelVet.filter(c => c.fecha === hoy).length;
+      document.getElementById('citasHoy').textContent = citasHoy;
+
+      const esteMes = new Date().getMonth();
+      const citasCompletadas = citasDelVet.filter(c => c.estado === 'completada' && new Date(c.fecha).getMonth() === esteMes).length;
+      document.getElementById('citasCompletadas').textContent = citasCompletadas;
+
+      const pacientesAtendidos = new Set(citasDelVet.filter(c => new Date(c.fecha).getMonth() === esteMes).map(c => c.mascota + c.tutorEmail)).size;
+      document.getElementById('pacientesAtendidos').textContent = pacientesAtendidos;
+    }
+
+    function cargarAgenda() {
+      const todasLasCitas = JSON.parse(localStorage.getItem('citas')) || [];
+      const filtroFecha = document.getElementById('filtro-fecha-agenda').value;
+      const filtroEstado = document.getElementById('filtro-estado-agenda').value;
+
+      let citasFiltradas = todasLasCitas.filter(c => c.veterinario === vetActivo.nombre);
+
+      if (filtroFecha) {
+        citasFiltradas = citasFiltradas.filter(c => c.fecha === filtroFecha);
+      }
+      if (filtroEstado) {
+        citasFiltradas = citasFiltradas.filter(c => c.estado === filtroEstado);
+      }
+
+      const tbody = document.getElementById('agenda-body');
+      tbody.innerHTML = '';
+      if (citasFiltradas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay citas que coincidan con los filtros.</td></tr>';
+        return;
+      }
+
+      citasFiltradas.sort((a, b) => a.hora.localeCompare(b.hora)).forEach(cita => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${cita.hora}</td>
+          <td>${cita.mascota}</td>
+          <td>${cita.tutorEmail.split('@')[0]}</td>
+          <td>${cita.motivo}</td>
+          <td><span class="badge ${cita.estado}">${cita.estado}</span></td>
+          <td>
+            <button class="btn-secondary" style="padding: 5px 10px;" onclick="verHistorial('${cita.tutorEmail}', '${cita.mascota}')">Ver Historial</button>
+          </td>
+        `;
+      });
+    }
+
+    function cargarPacientes() {
+      const tutores = JSON.parse(localStorage.getItem('registrosUsuarios')) || [];
+      const searchPaciente = document.getElementById('search-paciente').value.toLowerCase();
+      const searchTutor = document.getElementById('search-tutor').value.toLowerCase();
+      const tbody = document.getElementById('pacientes-body');
+      tbody.innerHTML = '';
+      let pacientesEncontrados = 0;
+
+      tutores.forEach(tutor => {
+        if (tutor.nombre.toLowerCase().includes(searchTutor) || tutor.correo.toLowerCase().includes(searchTutor)) {
+          const mascotas = JSON.parse(localStorage.getItem(`mascotas_${tutor.correo}`)) || [];
+          mascotas.forEach(mascota => {
+            if (mascota.nombre.toLowerCase().includes(searchPaciente)) {
+              pacientesEncontrados++;
+              const row = tbody.insertRow();
+              row.innerHTML = `
+                <td>${mascota.nombre}</td>
+                <td>${mascota.especie}</td>
+                <td>${mascota.raza || 'N/A'}</td>
+                <td>${tutor.nombre}</td>
+                <td>${tutor.telefono || 'N/A'}</td>
+                <td><button class="btn-secondary" style="padding: 5px 10px;" onclick="verHistorial('${tutor.correo}', '${mascota.nombre}')">Ver Historial</button></td>
+              `;
+            }
+          });
+        }
+      });
+
+      if (pacientesEncontrados === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No se encontraron pacientes.</td></tr>';
+      }
+    }
+
+    function verHistorial(tutorEmail, mascotaNombre) {
+      const todasLasCitas = JSON.parse(localStorage.getItem('citas')) || [];
+      const historial = todasLasCitas.filter(c => c.tutorEmail === tutorEmail && c.mascota === mascotaNombre);
+      
+      if (historial.length === 0) {
+        alert(`No hay historial de citas para ${mascotaNombre}.`);
+        return;
+      }
+
+      let mensaje = `Historial Clínico de ${mascotaNombre}:\n\n`;
+      historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach(cita => {
+        mensaje += `Fecha: ${cita.fecha} a las ${cita.hora}\n`;
+        mensaje += `Motivo: ${cita.motivo}\n`;
+        mensaje += `Atendido por: ${cita.veterinario}\n`;
+        mensaje += `Estado: ${cita.estado}\n`;
+        mensaje += `----------------------------\n`;
+      });
+      alert(mensaje);
+    }
+
+    function generarReporte() {
+      const fechaInicio = document.getElementById('reporte-fecha-inicio').value;
+      const fechaFin = document.getElementById('reporte-fecha-fin').value;
+
+      if (!fechaInicio || !fechaFin) {
+        alert("Por favor, selecciona un rango de fechas para generar el reporte.");
+        return;
+      }
+
+      const todasLasCitas = JSON.parse(localStorage.getItem('citas')) || [];
+      const citasDelVet = todasLasCitas.filter(c => 
+        c.veterinario === vetActivo.nombre &&
+        c.fecha >= fechaInicio &&
+        c.fecha <= fechaFin
+      );
+
+      if (citasDelVet.length === 0) {
+        alert("No se encontraron citas completadas en el rango de fechas seleccionado.");
+        return;
+      }
+
+      let reporte = `Reporte de Citas Atendidas por ${vetActivo.nombre}\n`;
+      reporte += `Desde: ${fechaInicio} | Hasta: ${fechaFin}\n\n`;
+      citasDelVet.forEach(cita => {
+        reporte += `Fecha: ${cita.fecha} | Paciente: ${cita.mascota} | Tutor: ${cita.tutorEmail} | Estado: ${cita.estado}\n`;
+      });
+
+      alert("Simulación de Reporte Generado:\n\n" + reporte);
+    }
+
+    function cerrarSesion() {
+      if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+        localStorage.removeItem('veterinarioActivo');
+        window.location.href = "index.html";
+      }
+    }
+  </script>
+</body>
+</html>

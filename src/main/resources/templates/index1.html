@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bienvenido - Orange Hearth</title>
+  
+  <link rel="stylesheet" href="css/main.css" /> 
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    :root {
+      --naranja: #f28c28;
+      --naranja-oscuro: #d86f00;
+      --gris-oscuro: #2d2f2f;
+      --blanco: #ffffff;
+      --fondo-suave: #fff8f0;
+      --naranja-claro: #ffb766;
+    }
+
+    /* Estilos del cuerpo para centrar el contenido y el fondo */
+    .welcome-body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      /* Fondo degradado suave con colores de la marca */
+      background: linear-gradient(135deg, var(--fondo-suave) 0%, var(--naranja-claro) 100%); 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+      color: var(--gris-oscuro);
+      text-align: center;
+    }
+
+    /* Estilos del contenedor principal */
+    .welcome-container {
+      background: var(--blanco);
+      border: 2px solid var(--naranja);
+      border-radius: 25px;
+      padding: 3rem 4rem;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      
+      /* Animación sutil al cargar */
+      transform: scale(0.95);
+      opacity: 0;
+      animation: fadeInScale 0.8s ease-out forwards;
+    }
+    
+    @keyframes fadeInScale {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .welcome-container h1 {
+      color: var(--naranja-oscuro);
+      font-size: 2.2rem;
+      margin-bottom: 0.8rem;
+      font-weight: 700;
+    }
+
+    .welcome-container p {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      color: #555;
+    }
+
+    /* Estilos del botón */
+    .welcome-container button {
+      background-color: var(--naranja);
+      color: var(--blanco);
+      padding: 15px 35px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .welcome-container button:hover {
+      background-color: var(--naranja-oscuro);
+      transform: translateY(-2px);
+    }
+  </style>
+  
+</head>
+<body class="welcome-body">
+  <div class="welcome-container">
+    <h1>Bienvenido a la Gestión de Citas Orange Hearth</h1>
+    <p>Organiza tus citas de forma fácil y visual</p>
+    
+    <button onclick="window.location.href='index.html'">Entrar al sistema</button>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

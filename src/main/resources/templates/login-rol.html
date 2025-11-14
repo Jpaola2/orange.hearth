@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Ingreso - Seleccionar Rol | Orange Hearth</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <link rel="stylesheet" href="css/main.css"> 
+    
+    <style>
+        /* VARIABLES DE COLOR */
+        :root {
+            --naranja: #f28c28;
+            --naranja-oscuro: #d86f00;
+            --gris-oscuro: #2d2f2f;
+            --gris-suave: #f7f4f0;
+            --blanco: #ffffff;
+            --fondo-claro: #ffecd1;
+        }
+        /* ESTILOS GENERALES Y LAYOUT */
+        * {
+            box-sizing: border-box; /* Fundamental para evitar distorsiones */
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--gris-suave) 0%, var(--fondo-claro) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            color: var(--gris-oscuro);
+        }
+        /* BOTÓN VOLVER AL INICIO */
+        .back-to-home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: var(--naranja-oscuro);
+            font-weight: 600;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--naranja);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .back-to-home-btn:hover {
+            background-color: var(--naranja);
+            color: var(--blanco);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        /* CONTENEDOR PRINCIPAL DE DOS COLUMNAS REFINADO */
+        .rol-container {
+            background: var(--blanco);
+            border: 3px solid var(--naranja);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 1000px; 
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            display: flex; 
+            overflow: hidden;
+            min-height: 580px;
+        }
+        /* COLUMNA LATERAL VISUAL (SIDEBAR) - Branding */
+        .rol-sidebar {
+            flex: 1; 
+            max-width: 380px;
+            background: linear-gradient(to top right, var(--naranja-oscuro), var(--naranja));
+            padding: 3rem 2rem;
+            color: var(--blanco);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+        .rol-sidebar h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            text-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+        }
+        .rol-sidebar p {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            opacity: 0.9;
+        }
+        .rol-sidebar .fa-paw {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            color: var(--blanco);
+        }
+        /* COLUMNA PRINCIPAL (FORMULARIO) */
+        .rol-form-area {
+            flex: 2; 
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-box {
+            background: none;
+            border: none;
+            padding: 0;
+            width: 100%;
+            max-width: 550px; 
+            text-align: center;
+            box-shadow: none;
+        }
+        .login-box h2 {
+            color: var(--gris-oscuro);
+            margin-bottom: 2rem;
+            font-size: 2.2rem;
+        }
+        .logo { max-width: 180px; margin-bottom: 25px;}
+        .logo-container-white-bg {
+            background-color: white;
+            border-radius: 50%;
+            padding: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+        .rol-selector { margin-bottom: 30px;}
+        #rol-select {
+            padding: 15px;
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid var(--naranja); 
+            font-size: 18px;
+            font-weight: 600;
+            appearance: none; 
+            background-color: var(--gris-suave);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            text-align-last: center; 
+        }
+        /* Nuevo estilo para el contenedor de Formulario + Imagen */
+        .form-and-image-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            text-align: left;
+        }
+        /* Sección de imagen más grande */
+        .rol-image-section {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        .rol-image { 
+            max-width: 180px; 
+            height: auto;
+            border-radius: 15px;
+            border: 5px solid var(--naranja-oscuro);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+        .rol-image:hover {
+            transform: scale(1.05);
+        }
+        /* Sección del formulario (inputs) */
+        .rol-form-section {
+            flex-grow: 1;
+            width: 100%;
+        }
+        /* Estilos de Inputs del Formulario dinámico */
+        .rol-form-section input[type="email"],
+        .rol-form-section input[type="password"],
+        .rol-form-section input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .rol-form-section button {
+            background-color: var(--naranja);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            margin-top: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .rol-form-section button:hover {
+             background-color: var(--naranja-oscuro);
+             transform: translateY(-1px);
+        }
+        .link-button {
+            background: none;
+            border: none;
+            color: var(--naranja-oscuro);
+            cursor: pointer;
+            padding: 0;
+            margin-top: 10px;
+            text-decoration: underline;
+            font-size: 0.95rem;
+        }
+        .link-button:hover {
+            color: var(--naranja);
+        }
+        /* ENLACES DE AYUDA */
+        .login-help-links {
+            margin-top: 30px;
+            font-size: 1rem;
+            padding-top: 15px;
+            border-top: 1px solid var(--gris-suave);
+        }
+        .login-help-links a {
+            color: var(--naranja-oscuro);
+            text-decoration: none;
+            transition: color 0.3s;
+            margin: 0 10px;
+        }
+        .login-help-links a:hover {
+             color: var(--naranja);
+        }
+
+        /* --- ESTILOS DE MODALES (CORREGIDOS) --- */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1000; /* Z-index alto para estar sobre todo */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6); /* Oscuridad mayor */
+            backdrop-filter: blur(5px); /* Desenfoque más fuerte */
+            justify-content: center; 
+            align-items: center; 
+        }
+        .modal-content {
+            background-color: var(--blanco);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--naranja);
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+            animation: fadeIn 0.3s ease-out; /* Animación de entrada */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Botón de cerrar (X) */
+        .close-btn {
+            color: var(--gris-oscuro);
+            float: right;
+            font-size: 32px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: var(--naranja-oscuro);
+        }
+        /* Inputs dentro del modal */
+        .input-modal {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 15px 0; /* Espacio superior e inferior */
+            border: 1px solid var(--naranja); 
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        /* Botón de envío del modal */
+        .btn-modal-submit {
+             background-color: var(--naranja);
+             color: white;
+             padding: 12px;
+             border: none;
+             border-radius: 8px;
+             width: 100%;
+             margin-top: 10px;
+             font-weight: bold;
+             cursor: pointer;
+             transition: background-color 0.3s;
+        }
+        .btn-modal-submit:hover {
+             background-color: var(--naranja-oscuro);
+        }
+        /* Fix para el contenido de Soporte */
+        .support-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .support-info p {
+            margin: 0;
+            text-align: left;
+            display: flex; 
+            align-items: center;
+        }
+        .support-info i {
+            color: var(--naranja);
+            margin-right: 10px;
+            font-size: 1.1rem;
+            flex-shrink: 0; 
+        }
+        
+        /* MEDIA QUERIES PARA RESPONSIVE */
+        @media (max-width: 900px) {
+            .rol-container {
+                flex-direction: column;
+                min-height: auto;
+            }
+            .rol-sidebar {
+                display: none; /* Ocultar sidebar en móviles para ahorrar espacio */
+            }
+            .rol-form-area {
+                padding: 2rem 1.5rem;
+            }
+            /* Apilar imagen y formulario en móviles */
+            .form-and-image-wrapper {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            .rol-image { 
+                max-width: 150px;
+            }
+            .rol-form-section {
+                padding-top: 0;
+            }
+            .back-to-home-btn {
+                position: static; /* Ajustar posición para que no estorbe el contenido */
+                margin-bottom: 20px;
+                align-self: flex-start;
+            }
+            body {
+                flex-direction: column;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-to-home-btn">
+        <i class="fas fa-arrow-left"></i> Volver al Inicio
+    </a>
+    
+    <div class="rol-container">
+        <div class="rol-sidebar">
+            <i class="fas fa-paw"></i>
+            <h1>Orange Hearth</h1>
+            <p><strong>Gestión Veterinaria Inteligente.</strong> Selecciona tu perfil y accede a tu ecosistema de citas.</p>
+            <i class="fas fa-calendar-alt" style="font-size: 2.5rem; margin-top: 2rem;"></i>
+        </div>
+        <div class="rol-form-area">
+            
+            <div class="login-box">
+                <div class="logo-container-white-bg">
+                    <img src="imagenes/LogoOrangeHearth.png" alt="Logo Orange Hearth" class="logo" style="margin: 0; max-width: 120px;">
+                </div>
+                <h2 style="margin-top: 0;"><i class="fas fa-user-circle"></i> Iniciar Sesión por Rol</h2>
+                <div class="rol-selector">
+                    <label for="rol-select" style="display: block; font-weight: bold; margin-bottom: 15px; color: var(--naranja-oscuro);">¿Quién eres?</label>
+                    <select id="rol-select">
+                        <option value="">-- Selecciona tu perfil --</option>
+                        <option value="tutor">Tutor de Mascota</option>
+                        <option value="veterinario">Veterinario</option>
+                        <option value="admin">Gerente</option>
+                    </select>
+                </div>
+                <div id="login-form-container">
+                    <p style="margin-top: 30px; color: #666;"><i class="fas fa-arrow-up"></i> Elige un perfil en el menú desplegable para continuar.</p>
+                </div>
+                
+                <div class="login-help-links">
+                    <a href="#" onclick="showVetForgotPasswordModal(event)"><i class="fas fa-key"></i> ¿Olvidaste tu Contraseña?</a>
+                    <span>|</span>
+                    <a href="#" onclick="showSupportModal(event)"><i class="fas fa-headset"></i> Contactar con Soporte</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="supportModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('supportModal')">&times;</span>
+            <h3><i class="fas fa-headset"></i> Contactar con Soporte</h3>
+            <p>Si tienes problemas para ingresar, comunícate con nuestro equipo:</p>
+            <div class="support-info">
+                <p><i class="fas fa-envelope"></i> Email: soporte@orangehearth.com</p>
+                <p><i class="fas fa-phone"></i> Teléfono: +57 301 555 1234</p>
+                <p><i class="fas fa-calendar-alt"></i> Horario: Lunes a Viernes (8:00 AM - 6:00 PM)</p>
+            </div>
+        </div> 
+    </div>
+
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('forgotPasswordModal')">&times;</span>
+            <h3><i class="fas fa-lock-open"></i> Restablecer Contraseña</h3>
+            <p>Introduce tu correo electrónico para iniciar el proceso:</p>
+            <form onsubmit="handleVetForgotPassword(event)">
+                <input type="email" id="forgot-email" placeholder="Tu correo electrónico" required class="input-modal">
+                <button type="submit" class="btn-modal-submit">Enviar Solicitud</button>
+            </form>
+            <p id="forgot-message" style="margin-top: 15px; color: var(--naranja); font-weight: 600; display: none;"></p>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script> 
+        <script>
+        const ADMIN_PROFILE = {
+            email: 'jessica02ily@gmail.com',
+            nombre: 'Gerencia OrangeHearth',
+            rol: 'Gerente'
+        };
+
+        const API_BASE = '';
+        let countdownInterval;
+        let currentRol = '';
+
+        function showSupportModal(event) {
+            event.preventDefault();
+            document.getElementById('supportModal').style.display = 'flex';
+        }
+
+        function openVetForgotPassword() {
+            if (currentRol !== 'veterinario') {
+                alert('Selecciona el rol de Veterinario para recuperar tu contraseña.');
+                return;
+            }
+            const modal = document.getElementById('forgotPasswordModal');
+            document.getElementById('forgot-message').style.display = 'none';
+            const emailInput = document.getElementById('forgot-email');
+            emailInput.value = document.getElementById('correo-vet') ? document.getElementById('correo-vet').value : '';
+            modal.style.display = 'flex';
+        }
+
+        function showVetForgotPasswordModal(event) {
+            event.preventDefault();
+            openVetForgotPassword();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        async function postJson(url, payload) {
+            const response = await fetch(`${API_BASE}${url}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const contentType = response.headers.get('content-type') || '';
+            const data = contentType.includes('application/json') ? await response.json() : await response.text();
+            return { response, data };
+        }
+
+        async function handleVetForgotPassword(event) {
+            event.preventDefault();
+            const email = document.getElementById('forgot-email').value;
+            const messageElement = document.getElementById('forgot-message');
+            messageElement.style.display = 'block';
+            messageElement.style.color = 'var(--naranja)';
+            messageElement.textContent = '⏳ Enviando solicitud...';
+            try {
+                const { response, data } = await postJson('/api/auth/veterinarios/password-reset/request', { correo: email });
+                if (response.ok) {
+                    messageElement.style.color = '#155724';
+                    messageElement.textContent = typeof data === 'string' ? `✅ ${data}` : '✅ Revisa tu correo para continuar con el proceso.';
+                } else {
+                    const errorMessage = typeof data === 'string' ? data : (data.message || 'No se pudo procesar la solicitud.');
+                    messageElement.style.color = '#721c24';
+                    messageElement.textContent = `❌ ${errorMessage}`;
+                }
+            } catch (error) {
+                console.error('Error al solicitar restablecimiento:', error);
+                messageElement.style.color = '#721c24';
+                messageElement.textContent = '❌ No se pudo contactar al servidor. Intenta de nuevo.';
+            }
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        };
+
+        async function handleTutorLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('correo-tutor').value;
+            const password = document.getElementById('password-tutor').value;
+
+            if (!email || !email.includes('@')) {
+                alert('❌ Por favor, introduce un correo válido.');
+                return;
+            }
+
+            try {
+                const { response, data } = await postJson('/api/auth/tutores/login', { correo: email, password });
+                if (response.ok) {
+                    // Mantener compatibilidad con vistas que leen de localStorage
+                    const tutorSession = { correo: email, nombre: data.nombre };
+                    sessionStorage.setItem('tutorActivo', JSON.stringify(tutorSession));
+                    localStorage.setItem('tutorActivo', JSON.stringify(tutorSession));
+                    window.location.href = 'dashboardTutor.html';
+                } else {
+                    const errorMessage = data?.message || data || 'Credenciales inválidas.';
+                    alert(`❌ ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('Error autenticando tutor:', error);
+                alert('❌ No se pudo contactar al servidor.');
+            }
+        }
+
+        async function handleVeterinarioLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('correo-vet').value;
+            const tarjeta = document.getElementById('tarjeta-vet').value;
+            const password = document.getElementById('password-vet').value;
+
+            if (!email || !email.includes('@')) {
+                alert('❌ Por favor, introduce un correo válido.');
+                return;
+            }
+
+            try {
+                const payload = { correo: email, password, tarjetaProfesional: tarjeta };
+                const { response, data } = await postJson('/api/auth/veterinarios/login', payload);
+                if (response.ok) {
+                    const vetSession = { correo: email, nombre: data.nombre };
+                    sessionStorage.setItem('veterinarioActivo', JSON.stringify(vetSession));
+                    localStorage.setItem('veterinarioActivo', JSON.stringify(vetSession));
+                    window.location.href = 'dashboardVeterinario.html';
+                } else {
+                    const errorMessage = data?.message || data || 'Credenciales inválidas.';
+                    alert(`❌ ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('Error autenticando veterinario:', error);
+                alert('❌ No se pudo contactar al servidor.');
+            }
+        }
+
+        async function handleRequestAdminCode(event) {
+            event.preventDefault();
+            const messageElement = document.getElementById('admin-login-message');
+            messageElement.textContent = '⏳ Solicitando código...';
+            messageElement.style.color = 'var(--naranja)';
+
+            try {
+                const { response, data } = await postJson('/api/admin/auth/request-code', { correo: ADMIN_PROFILE.email });
+                if (response.ok) {
+                    document.getElementById('request-code-section').style.display = 'none';
+                    document.getElementById('verify-code-section').style.display = 'block';
+                    messageElement.style.color = '#155724';
+                    const text = typeof data === 'string' ? data : (data.message || 'Código enviado.');
+                    messageElement.textContent = `✅ ${text}`;
+                    startCountdown(60 * 10);
+                } else {
+                    const errorMessage = data?.message || data || 'No se pudo enviar el código.';
+                    messageElement.style.color = '#721c24';
+                    messageElement.textContent = `❌ ${errorMessage}`;
+                }
+            } catch (error) {
+                console.error('Error solicitando código:', error);
+                messageElement.style.color = '#721c24';
+                messageElement.textContent = '❌ No se pudo contactar al servidor para enviar el código.';
+            }
+        }
+
+        function startCountdown(duration) {
+            clearInterval(countdownInterval);
+            let timer = duration;
+            const countdownElement = document.getElementById('countdown-timer');
+            countdownElement.style.display = 'block';
+
+            countdownInterval = setInterval(() => {
+                const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
+                const seconds = String(timer % 60).padStart(2, '0');
+                countdownElement.textContent = `Tiempo restante: ${minutes}:${seconds}`;
+                if (--timer < 0) {
+                    clearInterval(countdownInterval);
+                    countdownElement.textContent = 'El código ha expirado. Pide uno nuevo.';
+                    document.getElementById('verify-code-section').style.display = 'none';
+                    document.getElementById('request-code-section').style.display = 'block';
+                }
+            }, 1000);
+        }
+
+        async function handleVerifyAdminCode(event) {
+            event.preventDefault();
+            const codeInput = document.getElementById('codigo-admin');
+            const messageElement = document.getElementById('admin-login-message');
+            messageElement.textContent = '⏳ Verificando código...';
+            messageElement.style.color = 'var(--naranja)';
+            codeInput.style.borderColor = '#ddd';
+            codeInput.style.backgroundColor = 'white';
+
+            try {
+                const { response, data } = await postJson('/api/admin/auth/verify-code', {
+                    correo: ADMIN_PROFILE.email,
+                    codigo: codeInput.value
+                });
+
+                if (response.ok) {
+                    codeInput.style.borderColor = '#28a745';
+                    codeInput.style.backgroundColor = '#d4edda';
+                    messageElement.style.color = '#155724';
+                    messageElement.textContent = `${data.mensaje} Redirigiendo...`;
+                    localStorage.setItem('adminSessionToken', data.token);
+                    setTimeout(() => window.location.href = 'dashboardAdmin.html', 1500);
+                } else {
+                    codeInput.style.borderColor = '#dc3545';
+                    codeInput.style.backgroundColor = '#f8d7da';
+                    const errorMessage = data?.message || data || 'Código inválido.';
+                    messageElement.style.color = '#721c24';
+                    messageElement.textContent = `❌ ${errorMessage}`;
+                    codeInput.value = '';
+                    codeInput.focus();
+                }
+            } catch (error) {
+                console.error('Error verificando código:', error);
+                messageElement.style.color = '#721c24';
+                messageElement.textContent = '❌ No se pudo conectar con el servidor.';
+            }
+        }
+
+        function toggleForgotPasswordLink(rol) {
+            const helpLinks = document.querySelector('.login-help-links');
+            const forgotPasswordLink = helpLinks.querySelector('a[onclick*="showVetForgotPasswordModal"]');
+            const separator = helpLinks.querySelector('span');
+            const visible = rol === 'veterinario';
+            if (forgotPasswordLink) {
+                forgotPasswordLink.style.display = visible ? 'inline' : 'none';
+            }
+            if (separator) {
+                separator.style.display = visible ? 'inline' : 'none';
+            }
+        }
+
+        document.getElementById('rol-select').addEventListener('change', function() {
+            const rol = this.value;
+            currentRol = rol;
+            toggleForgotPasswordLink(rol);
+            const container = document.getElementById('login-form-container');
+            container.innerHTML = '';
+
+            let htmlContent = '';
+            let formTitle = '';
+            let imageSrc = '';
+            let altText = '';
+            let formHTML = '';
+            let footerHTML = '';
+            let onsubmitAction = '';
+
+            if (rol === 'tutor') {
+                formTitle = 'Ingreso Tutor de Mascota';
+                imageSrc = 'imagenes/Usuario.png';
+                altText = 'Imagen alusiva a Tutor';
+                onsubmitAction = 'handleTutorLogin(event)';
+                formHTML = `
+                    <input type="email" id="correo-tutor" name="correo" placeholder="Correo Electrónico" required>
+                    <input type="password" id="password-tutor" name="password" placeholder="Contraseña" required>
+                    <button type="submit"><i class="fas fa-paw"></i> Ingresar</button>
+                `;
+                footerHTML = `<p class="mt-3" style="margin-top: 25px; font-size: 0.95rem; color: #555;">¿No tienes cuenta? <a href="registro.html" style="color: var(--naranja);">Regístrate aquí</a></p>`;
+            } else if (rol === 'veterinario') {
+                formTitle = 'Ingreso Veterinario';
+                imageSrc = 'imagenes/MedicoVeterinario.png';
+                altText = 'Imagen alusiva a Veterinario';
+                onsubmitAction = 'handleVeterinarioLogin(event)';
+                formHTML = `
+                    <input type="email" id="correo-vet" name="email" placeholder="Correo Electrónico" required>
+                    <input type="text" id="tarjeta-vet" name="tarjeta_profesional" placeholder="Tarjeta Profesional" required>
+                    <input type="password" id="password-vet" name="password" placeholder="Contraseña" required>
+                    <button type="submit"><i class="fas fa-user-md"></i> Ingresar</button>
+                    <button type="button" class="link-button" onclick="openVetForgotPassword()">¿Olvidaste tu contraseña?</button>
+                `;
+                footerHTML = `<p class="mt-3" style="margin-top: 25px; font-size: 0.95rem; color: #555;"><i class="fas fa-info-circle"></i> *El registro de veterinarios es gestionado por el gerente.</p>`;
+            } else if (rol === 'admin') {
+                formTitle = 'Ingreso Gerente';
+                imageSrc = 'imagenes/Admin.png';
+                altText = 'Imagen alusiva al Gerente';
+                formHTML = `
+                    <div id="request-code-section">
+                        <form id="request-code-form" onsubmit="handleRequestAdminCode(event)">
+                            <p style="margin-bottom: 15px; color: #555;">Haz clic para recibir un código de acceso en el correo de gerencia.</p>
+                            <button type="submit" style="width: 100%;"><i class="fas fa-paper-plane"></i> Pedir Código</button>
+                        </form>
+                    </div>
+                    <div id="verify-code-section" style="display: none;">
+                        <form id="verify-code-form" onsubmit="handleVerifyAdminCode(event)">
+                            <input type="text" id="codigo-admin" name="codigo" placeholder="Escribe el código recibido" required>
+                            <div id="countdown-timer" style="margin-top: 10px; font-weight: 600; color: var(--naranja-oscuro); display: none;"></div>
+                            <button type="submit"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+                        </form>
+                    </div>
+                `;
+                footerHTML = `
+                    <p id="admin-login-message" style="margin-top: 15px; font-weight: 600;"></p>
+                    <p style="margin-top: 5px; font-size: 0.95rem; color: #555;"><i class="fas fa-lock"></i> Acceso restringido al personal autorizado (Gerencia).</p>
+                `;
+            }
+
+            if (rol) {
+                htmlContent = `
+                    <div class="rol-content">
+                        <h3 style="color: var(--naranja-oscuro); margin-bottom: 25px; font-size: 1.8rem; border-bottom: 2px solid var(--gris-suave); padding-bottom: 10px;">${formTitle}</h3>
+                        <div class="form-and-image-wrapper">
+                            <div class="rol-image-section">
+                                <img src="${imageSrc}" alt="${altText}" class="rol-image">
+                            </div>
+                            <div class="rol-form-section">
+                                ${rol === 'admin' ? formHTML : `<form id="${rol}-login-form" onsubmit="${onsubmitAction}">${formHTML}</form>`}
+                            </div>
+                        </div>
+                        ${footerHTML}
+                    </div>
+                `;
+            } else {
+                htmlContent = `<p style="margin-top: 30px; color: #666;"><i class="fas fa-arrow-up"></i> Elige un perfil en el menú desplegable para continuar.</p>`;
+            }
+
+            container.innerHTML = htmlContent;
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('rol-select').dispatchEvent(new Event('change'));
+        });
+    </script>
+
+</body>
+</html>

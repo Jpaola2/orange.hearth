@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" type="image/png" href="imagenes/LogoOrangeHearth.png">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda - OrangeHearth</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #fff8f0;
+      text-align: center;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+    }
+    .agenda-title {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #f28c28;
+      margin: 1rem 0;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(3, 120px);
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .calendar div {
+      padding: 1rem;
+      border: 2px solid #f28c28;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .calendar div:hover {
+      background-color: #ffe6cc;
+    }
+    .calendar div.activo {
+      background-color: #f28c28;
+      color: white;
+    }
+    .days {
+      display: grid;
+      grid-template-columns: repeat(6, 60px);
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+    .days button {
+      padding: 0.6rem;
+      border: 2px solid #f28c28;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+    }
+    .days button.activo {
+      background: #f28c28;
+      color: white;
+    }
+    .citas {
+      max-width: 600px;
+      margin: 2rem auto;
+      text-align: left;
+    }
+    .cita {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      border: 2px solid #f28c28;
+      padding: 0.8rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+    .cita-info {
+      flex: 1;
+    }
+    .cita button {
+      margin-left: 0.5rem;
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .confirmar { background: #28a745; color: white; }
+    .cancelar { background: #dc3545; color: white; }
+    .notificacion {
+      background: #ffe6e6;
+      border: 2px solid #f28c28;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin: 2rem auto;
+      max-width: 600px;
+      color: #c0392b;
+      font-weight: bold;
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+    }
+    .nav-buttons button {
+      padding: 0.6rem 1.5rem;
+      border: 2px solid #f28c28;
+      background: white;
+      color: #f28c28;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="LogoOrangeHearth.png" alt="Logo" width="100">
+    <input type="text" value="Dr. Ángel Valencia" readonly style="border: 2px solid #f28c28; padding: 0.4rem; border-radius: 6px;">
+  </header>
+
+  <div class="agenda-title">
+    Agenda<br>
+    <div style="margin-top:0.5rem; border: 1px solid #f28c28; border-radius: 5px; display: inline-block; padding: 0.2rem 1rem;">
+      Pepinillo<br>963852
+    </div>
+  </div>
+
+  <div class="calendar" id="calendarioMeses"></div>
+  <div class="days" id="calendarioDias" style="display:none;"></div>
+
+  <div class="citas" id="contenedorCitas"></div>
+  <div class="notificacion" id="notificacion" style="display:none;"></div>
+
+  <div class="nav-buttons">
+    <button onclick="window.location.href='index.html'">Inicio</button>
+    <button onclick="window.history.back()">Atrás</button>
+    <button onclick="window.location.href='dashboardveterinario.html'">Finalizar</button>
+  </div>
+
+  <script>
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const diasConCitas = [13, 18, 20];
+    const citasPorDia = {
+      13: [
+        { paciente: "Pepinillo", cedula: 963852, hora: "9:00 a.m." },
+        { paciente: "Morita", cedula: 7410235, hora: "11:00 a.m." },
+        { paciente: "Skay", cedula: 4561473, hora: "8:00 a.m." }
+      ],
+      18: [
+        { paciente: "Nacho", cedula: 3541297, hora: "7:00 p.m." }
+      ]
+    };
+
+    const calendarioMeses = document.getElementById("calendarioMeses");
+    const calendarioDias = document.getElementById("calendarioDias");
+    const contenedorCitas = document.getElementById("contenedorCitas");
+    const notificacion = document.getElementById("notificacion");
+
+    meses.forEach((mes, index) => {
+      const div = document.createElement("div");
+      div.textContent = mes;
+      div.onclick = () => seleccionarMes(index);
+      calendarioMeses.appendChild(div);
+    });
+
+    function seleccionarMes(mes) {
+      calendarioDias.style.display = 'grid';
+      calendarioDias.innerHTML = "<strong>" + meses[mes] + "</strong>";
+      for (let i = 1; i <= 30; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        if (diasConCitas.includes(i)) btn.classList.add("activo");
+        btn.onclick = () => mostrarCitas(i);
+        calendarioDias.appendChild(btn);
+      }
+    }
+
+    function mostrarCitas(dia) {
+      contenedorCitas.innerHTML = "";
+      notificacion.style.display = "none";
+      if (citasPorDia[dia]) {
+        citasPorDia[dia].forEach(cita => {
+          const div = document.createElement("div");
+          div.className = "cita";
+          div.innerHTML = `
+            <div class="cita-info">
+              <strong>${cita.paciente}</strong><br>${cita.cedula}<br>Lunes 13 de mayo de 2025<br>Hora: ${cita.hora}
+            </div>
+            <div>
+              <button class="confirmar" onclick="mostrarMensaje('${cita.paciente}', '${cita.cedula}', '${cita.hora}', true)">Confirmar</button>
+              <button class="cancelar" onclick="mostrarMensaje('${cita.paciente}', '${cita.cedula}', '${cita.hora}', false)">Cancelar</button>
+            </div>`;
+          contenedorCitas.appendChild(div);
+        });
+      } else {
+        contenedorCitas.innerHTML = "<p>No hay citas programadas para este día.</p>";
+      }
+    }
+
+    function mostrarMensaje(nombre, cedula, hora, confirmado) {
+      const texto = confirmado ?
+        `La cita con la paciente <strong>${nombre} (${cedula})</strong><br>para el <strong>Lunes 13 de mayo de 2025</strong><br><strong>Hora: ${hora}</strong> ¡ha sido confirmada con éxito!` :
+        `La cita con la paciente <strong>${nombre} (${cedula})</strong><br>para el <strong>Lunes 13 de mayo de 2025</strong><br><strong>Hora: ${hora}</strong> ¡ha sido cancelada con éxito!`;
+      notificacion.innerHTML = texto;
+      notificacion.style.display = "block";
+    }
+  </script>
+</body>
+</html>

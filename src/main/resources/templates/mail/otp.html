@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<body style="margin:0;padding:0;background-color:#f7f4f0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td style="padding:20px 0;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" width="600"
+             style="border-collapse:collapse;background-color:#ffffff;border-radius:15px;box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+        <tr>
+          <td align="center" style="background-color:#f28c28;padding:20px;border-top-left-radius:15px;border-top-right-radius:15px;">
+            <div style="width:90px;height:90px;background-color:#ffffff;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+              <img src="cid:logo" alt="Orange Hearth Logo" width="70" style="display:block;">
+            </div>
+            <h1 style="color:#ffffff;margin:15px 0 0;font-size:24px;">Panel de Gerencia</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:30px 40px;">
+            <h2 style="color:#d86f00;margin-top:0;">Hola, <span>{{NAME}}</span></h2>
+            <p style="color:#333;line-height:1.6;">Se ha solicitado un código de acceso para el Panel de Gerencia de Orange Hearth. Este código es de un solo uso y expirará en 10 minutos.</p>
+            <div style="background-color:#fff8f0;border:2px dashed #f28c28;padding:20px;margin:30px 0;text-align:center;border-radius:10px;">
+              <p style="font-size:1.1em;margin:0;color:#555;">Tu código de verificación es:</p>
+              <p style="font-size:2.8em;font-weight:bold;color:#d86f00;margin:10px 0;letter-spacing:8px;font-family:'Courier New',Courier,monospace;">{{CODE}}</p>
+            </div>
+            <p style="color:#333;line-height:1.6;">Por favor, introduce este código en la página de inicio de sesión para continuar.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color:#f9f9f9;padding:20px 40px;">
+            <h3 style="color:#555;font-size:14px;margin-top:0;">🔒 Detalles de Seguridad de la Solicitud:</h3>
+            <p style="color:#666;font-size:13px;margin:5px 0;"><strong>Fecha y Hora:</strong> <span>{{DATETIME}}</span></p>
+            <p style="color:#666;font-size:13px;margin:5px 0;"><strong>Dirección IP:</strong> <span>{{IP}}</span></p>
+            <p style="color:#e74c3c;font-weight:bold;font-size:14px;margin-top:15px;">Si no has solicitado este código, por favor ignora este correo. Nunca compartas este código con nadie.</p>
+          </td>
+        </tr>
+        <tr>
+          <td align="center" style="padding:20px;font-size:12px;color:#999;">
+            <p style="margin:0;">© 2025 Orange Hearth. Todos los derechos reservados.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
