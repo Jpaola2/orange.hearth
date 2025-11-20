@@ -14,9 +14,12 @@ import com.orangehearth.OrangeHearth.dto.request.SolicitudRestablecimientoContra
 import com.orangehearth.OrangeHearth.exception.ExcepcionValidacion;
 import com.orangehearth.OrangeHearth.model.entity.TokenRestablecimientoContrasena;
 import com.orangehearth.OrangeHearth.model.entity.CuentaUsuario;
+import com.orangehearth.OrangeHearth.model.entity.Veterinarian;
+import com.orangehearth.OrangeHearth.model.enums.EstadoCuenta;
 import com.orangehearth.OrangeHearth.model.enums.Rol;
 import com.orangehearth.OrangeHearth.repository.RepositorioTokensRestablecimiento;
 import com.orangehearth.OrangeHearth.repository.RepositorioCuentasUsuario;
+import com.orangehearth.OrangeHearth.repository.RepositorioVeterinarios;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +32,7 @@ public class ServicioRestablecimientoContrasena {
 	private final PasswordEncoder passwordEncoder;
     private final ServicioPoliticaContrasena passwordPolicyService;
     private final ServicioCorreo emailService;
+    private final RepositorioVeterinarios veterinarianRepository;
 
 	@Value("${app.veterinarian.reset.expiration-minutes:60}")
 	private long expirationMinutes;
@@ -38,38 +42,61 @@ public class ServicioRestablecimientoContrasena {
 
     @Transactional
     public void requestVeterinarianReset(SolicitudRestablecimientoContrasena request) {
-		Optional<CuentaUsuario> accountOptional = userAccountRepository.findByEmailIgnoreCase(request.correo())
-			.filter(user -> user.getRol() == Rol.VETERINARIO);
-
-		accountOptional.ifPresent(account -> {
-			TokenRestablecimientoContrasena token = TokenRestablecimientoContrasena.builder()
-				.token(UUID.randomUUID().toString())
-				.userAccount(account)
-				.expiresAt(LocalDateTime.now().plusMinutes(expirationMinutes))
-				.build();
-            passwordResetTokenRepository.save(token);
-            String url = resetBaseUrl + token.getToken();
-            emailService.sendVeterinarianResetLinkHtml(account.getEmail(), account.getFullName(), url);
-        });
+        throw new ExcepcionValidacion("El restablecimiento por correo ha sido desactivado para veterinarios. Usa la opción de pregunta de seguridad.");
 	}
 
 	@Transactional
 	public void confirmVeterinarianReset(SolicitudConfirmacionRestablecimiento request) {
-		TokenRestablecimientoContrasena token = passwordResetTokenRepository.findByTokenAndUsedAtIsNull(request.token())
-			.orElseThrow(() -> new ExcepcionValidacion("Token inválido o ya utilizado."));
-
-		if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
-			throw new ExcepcionValidacion("El token expiró, solicita uno nuevo.");
-		}
-
-		CuentaUsuario account = token.getCuentaUsuario();
-		if (account.getRol() != Rol.VETERINARIO) {
-			throw new ExcepcionValidacion("El token no corresponde a un veterinario.");
-		}
-
-		passwordPolicyService.validateOrThrow(request.nuevaPassword());
-		account.setPassword(passwordEncoder.encode(request.nuevaPassword()));
-		account.setPasswordUpdatedAt(LocalDateTime.now());
-		token.setUsedAt(LocalDateTime.now());
+        throw new ExcepcionValidacion("El flujo de token por correo ha sido desactivado para veterinarios. Usa la opción de pregunta de seguridad.");
 	}
+
+    @Transactional(readOnly = true)
+    public String getVeterinarianSecurityQuestion(SolicitudRestablecimientoContrasena request) {
+        CuentaUsuario account = userAccountRepository.findByEmailIgnoreCase(request.correo())
+            .filter(user -> user.getRol() == Rol.VETERINARIO)
+            .filter(user -> user.getStatus() == EstadoCuenta.ACTIVE)
+            .orElseThrow(() -> new ExcepcionValidacion("No fue posible completar el proceso. Por favor contacta a la administración."));
+
+        veterinarianRepository.findByUserAccountId(account.getId())
+            .filter(v -> v.getStatus() == EstadoCuenta.ACTIVE)
+            .orElseThrow(() -> new ExcepcionValidacion("No fue posible completar el proceso. Por favor contacta a la administración."));
+
+        if (account.getSecurityQuestion() == null || account.getSecurityQuestion().isBlank()
+            || account.getSecurityAnswerHash() == null || account.getSecurityAnswerHash().isBlank()) {
+            throw new ExcepcionValidacion("No fue posible completar el proceso. Por favor contacta a la administración.");
+        }
+
+        return account.getSecurityQuestion();
+    }
+
+    @Transactional
+    public void confirmVeterinarianResetBySecurityAnswer(
+        com.orangehearth.OrangeHearth.dto.request.SolicitudConfirmacionSeguridadVeterinario request
+    ) {
+        CuentaUsuario account = userAccountRepository.findByEmailIgnoreCase(request.correo())
+            .orElseThrow(() -> new ExcepcionValidacion("Credenciales inválidas."));
+
+        if (account.getRol() != Rol.VETERINARIO) {
+            throw new ExcepcionValidacion("No autorizado para este proceso.");
+        }
+        if (account.getStatus() != EstadoCuenta.ACTIVE) {
+            throw new ExcepcionValidacion("No fue posible completar el proceso. Por favor contacta a la administración.");
+        }
+
+        veterinarianRepository.findByUserAccountId(account.getId())
+            .filter(v -> v.getStatus() == EstadoCuenta.ACTIVE)
+            .orElseThrow(() -> new ExcepcionValidacion("No fue posible completar el proceso. Por favor contacta a la administración."));
+
+        if (account.getSecurityAnswerHash() == null || account.getSecurityAnswerHash().isBlank()) {
+            throw new ExcepcionValidacion("No fue posible completar el proceso. Por favor contacta a la administración.");
+        }
+
+        if (!passwordEncoder.matches(request.respuestaSeguridad(), account.getSecurityAnswerHash())) {
+            throw new ExcepcionValidacion("La respuesta de seguridad es incorrecta.");
+        }
+
+        passwordPolicyService.validateOrThrow(request.nuevaPassword());
+        account.setPassword(passwordEncoder.encode(request.nuevaPassword()));
+        account.setPasswordUpdatedAt(LocalDateTime.now());
+    }
 }

@@ -427,12 +427,27 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('forgotPasswordModal')">&times;</span>
             <h3><i class="fas fa-lock-open"></i> Restablecer Contraseña</h3>
-            <p>Introduce tu correo electrónico para iniciar el proceso:</p>
+            <p>Introduce tu correo electrónico para buscar tu cuenta de veterinario y mostrar tu pregunta de seguridad.</p>
             <form onsubmit="handleVetForgotPassword(event)">
                 <input type="email" id="forgot-email" placeholder="Tu correo electrónico" required class="input-modal">
-                <button type="submit" class="btn-modal-submit">Enviar Solicitud</button>
+                <button type="submit" class="btn-modal-submit">Continuar</button>
             </form>
             <p id="forgot-message" style="margin-top: 15px; color: var(--naranja); font-weight: 600; display: none;"></p>
+        </div>
+    </div>
+
+    <div id="resetVetPasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('resetVetPasswordModal')">&times;</span>
+            <h3><i class="fas fa-key"></i> Restablecer Contraseña - Veterinario</h3>
+            <p id="vet-security-question-text" style="font-weight: 600; margin-bottom: 10px;"></p>
+            <form onsubmit="handleVetResetPassword(event)">
+                <input type="text" id="vet-security-answer" placeholder="Respuesta de seguridad" required class="input-modal">
+                <input type="password" id="reset-password" placeholder="Nueva contraseña" required class="input-modal">
+                <input type="password" id="reset-password-confirm" placeholder="Confirmar contraseña" required class="input-modal">
+                <button type="submit" class="btn-modal-submit">Actualizar Contraseña</button>
+            </form>
+            <p id="reset-message" style="margin-top: 15px; color: var(--naranja); font-weight: 600; display: none;"></p>
         </div>
     </div>
 
@@ -447,6 +462,7 @@
         const API_BASE = '';
         let countdownInterval;
         let currentRol = '';
+        let vetResetEmail = '';
 
         function showSupportModal(event) {
             event.preventDefault();
@@ -491,12 +507,29 @@
             const messageElement = document.getElementById('forgot-message');
             messageElement.style.display = 'block';
             messageElement.style.color = 'var(--naranja)';
-            messageElement.textContent = '⏳ Enviando solicitud...';
+            messageElement.textContent = '⏳ Buscando tu cuenta y pregunta de seguridad...';
             try {
-                const { response, data } = await postJson('/api/auth/veterinarios/password-reset/request', { correo: email });
+                const { response, data } = await postJson('/api/auth/veterinarios/password-reset/security-question', { correo: email });
                 if (response.ok) {
-                    messageElement.style.color = '#155724';
-                    messageElement.textContent = typeof data === 'string' ? `✅ ${data}` : '✅ Revisa tu correo para continuar con el proceso.';
+                    const pregunta = data?.preguntaSeguridad || data?.pregunta || data?.securityQuestion || '';
+                    if (!pregunta) {
+                        messageElement.style.color = '#721c24';
+                        messageElement.textContent = '❌ No fue posible obtener la pregunta de seguridad. Intenta más tarde.';
+                        return;
+                    }
+                    vetResetEmail = email;
+                    messageElement.style.display = 'none';
+                    closeModal('forgotPasswordModal');
+                    const qElement = document.getElementById('vet-security-question-text');
+                    if (qElement) qElement.textContent = pregunta;
+                    const answerInput = document.getElementById('vet-security-answer');
+                    const passInput = document.getElementById('reset-password');
+                    const passConfirmInput = document.getElementById('reset-password-confirm');
+                    if (answerInput) answerInput.value = '';
+                    if (passInput) passInput.value = '';
+                    if (passConfirmInput) passConfirmInput.value = '';
+                    const modal = document.getElementById('resetVetPasswordModal');
+                    if (modal) modal.style.display = 'flex';
                 } else {
                     const errorMessage = typeof data === 'string' ? data : (data.message || 'No se pudo procesar la solicitud.');
                     messageElement.style.color = '#721c24';
@@ -504,6 +537,59 @@
                 }
             } catch (error) {
                 console.error('Error al solicitar restablecimiento:', error);
+                messageElement.style.color = '#721c24';
+                messageElement.textContent = '❌ No se pudo contactar al servidor. Intenta de nuevo.';
+            }
+        }
+
+        async function handleVetResetPassword(event) {
+            event.preventDefault();
+            const answer = document.getElementById('vet-security-answer').value;
+            const password = document.getElementById('reset-password').value;
+            const confirm = document.getElementById('reset-password-confirm').value;
+            const messageElement = document.getElementById('reset-message');
+            messageElement.style.display = 'block';
+
+            if (!vetResetEmail) {
+                messageElement.style.color = '#721c24';
+                messageElement.textContent = '❌ Debes iniciar el proceso desde "¿Olvidaste tu contraseña?" como veterinario.';
+                return;
+            }
+            if (!answer) {
+                messageElement.style.color = '#721c24';
+                messageElement.textContent = '❌ Debes responder la pregunta de seguridad.';
+                return;
+            }
+            if (!password || !confirm) {
+                messageElement.style.color = '#721c24';
+                messageElement.textContent = '❌ Debes completar ambos campos.';
+                return;
+            }
+            if (password !== confirm) {
+                messageElement.style.color = '#721c24';
+                messageElement.textContent = '❌ Las contraseñas no coinciden.';
+                return;
+            }
+            messageElement.style.color = 'var(--naranja)';
+            messageElement.textContent = '⏳ Validando respuesta y actualizando contraseña...';
+
+            try {
+                const { response, data } = await postJson('/api/auth/veterinarios/password-reset/security-confirm', {
+                    correo: vetResetEmail,
+                    respuestaSeguridad: answer,
+                    nuevaPassword: password
+                });
+                if (response.ok) {
+                    messageElement.style.color = '#155724';
+                    const text = typeof data === 'string' ? data : (data.message || 'Contraseña actualizada con éxito.');
+                    messageElement.textContent = `✅ ${text} Ahora puedes iniciar sesión con tu nueva contraseña.`;
+                } else {
+                    const errorMessage = typeof data === 'string' ? data : (data.message || 'No se pudo restablecer la contraseña.');
+                    messageElement.style.color = '#721c24';
+                    messageElement.textContent = `❌ ${errorMessage}`;
+                }
+            } catch (error) {
+                console.error('Error al confirmar restablecimiento:', error);
                 messageElement.style.color = '#721c24';
                 messageElement.textContent = '❌ No se pudo contactar al servidor. Intenta de nuevo.';
             }
@@ -756,7 +842,10 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('rol-select').dispatchEvent(new Event('change'));
+            const rolSelect = document.getElementById('rol-select');
+            if (!rolSelect) return;
+
+            rolSelect.dispatchEvent(new Event('change'));
         });
     </script>
 

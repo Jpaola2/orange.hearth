@@ -384,47 +384,314 @@
       </div>
     </div>
 
+    <div class="pets-section" id="upcoming-section">
+      <h2>
+        <i class="fas fa-calendar-check"></i>
+        Mis Próximas Citas
+      </h2>
+      <div id="upcoming-list">
+        <p style="color:#666;">Cargando citas...</p>
+      </div>
+    </div>
+
     <div class="pets-section">
       <h2>
         <i class="fas fa-paw"></i>
         Mis Mascotas
       </h2>
 
-      <div class="no-pets" th:if="${mascotas == null or #lists.isEmpty(mascotas)}">
+      <div class="no-pets" id="no-pets-message">
         <i class="fas fa-paw"></i>
         <h3>No tienes mascotas registradas</h3>
         <p>Agrega tu primera mascota para comenzar a gestionar su cuidado</p>
       </div>
 
-      <div class="pets-grid" id="pets-container"
-           th:if="${mascotas != null and !#lists.isEmpty(mascotas)}">
-        <div class="pet-card" th:each="mascota, iter : ${mascotas}"
-             th:onclick="|verDetallesMascota('${mascota.nombre}', ${iter.index})|">
-          <div class="pet-header">
-            <div class="pet-avatar"
-                 th:text="${#strings.toUpperCase(mascota.nombre != null && mascota.nombre.length() > 0 ? mascota.nombre.substring(0,1) : 'M')}">
-              M
+      <div class="pets-grid" id="pets-container">
+        <!-- Tarjetas de mascotas generadas dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Nota: el saludo y la lista de mascotas se obtienen ahora desde el backend vía API.
+
+    let tutorIdCache = null;
+    let citasTutorCache = [];
+
+    function getTutorSession() {
+      const raw = localStorage.getItem("tutorActivo") || sessionStorage.getItem("tutorActivo");
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          correo: parsed.correo || parsed.email || null,
+          nombre: parsed.nombre || parsed.fullName || parsed.nombreCompleto || ''
+        };
+      } catch (e) {
+        return { correo: raw, nombre: '' };
+      }
+    }
+
+    function getTutorCorreoForStorage() {
+      const session = getTutorSession();
+      if (!session || !session.correo) return null;
+      return session.correo.toLowerCase();
+    }
+
+    async function obtenerTutorIdActual() {
+      const session = getTutorSession();
+      if (!session || !session.correo) return null;
+      try {
+        const resp = await fetch('/api/tutores');
+        const lista = await resp.json().catch(() => []);
+        const tutores = Array.isArray(lista) ? lista : [];
+        const correoLower = session.correo.toLowerCase();
+        const tutor = tutores.find(t => (t.correo || '').toLowerCase() === correoLower);
+        tutorIdCache = tutor ? tutor.id : null;
+        return tutorIdCache;
+      } catch (e) {
+        console.error('No se pudo obtener el tutor actual:', e);
+        return null;
+      }
+    }
+
+    async function cargarCitasTutor(tutorIdParam) {
+      let tutorId = tutorIdParam || tutorIdCache;
+      if (!tutorId) {
+        const stored = localStorage.getItem('tutorIdActivo');
+        if (stored) {
+          tutorId = parseInt(stored, 10) || null;
+        }
+      }
+      if (!tutorId) {
+        tutorId = await obtenerTutorIdActual();
+        if (tutorId) {
+          localStorage.setItem('tutorIdActivo', String(tutorId));
+        }
+      }
+
+      const upcomingContainer = document.getElementById('upcoming-list');
+      if (!tutorId) {
+        citasTutorCache = [];
+        if (upcomingContainer) {
+          upcomingContainer.innerHTML = '<p style="color:#dc3545;">No se pudo identificar al tutor para cargar las citas.</p>';
+        }
+        return;
+      }
+
+      if (upcomingContainer) {
+        upcomingContainer.innerHTML = '<p style="color:#666;">Cargando citas...</p>';
+      }
+
+      try {
+        const resp = await fetch(`/api/citas?tutorId=${encodeURIComponent(tutorId)}`);
+        const data = await resp.json().catch(() => []);
+        citasTutorCache = Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.error('No se pudieron cargar las citas del tutor:', e);
+        citasTutorCache = [];
+      }
+
+      renderProximasCitas();
+    }
+
+    function obtenerProximaCitaMascota(nombreMascota) {
+      if (!Array.isArray(citasTutorCache) || !citasTutorCache.length) return null;
+      const ahora = new Date();
+      const nombreLower = (nombreMascota || '').toLowerCase();
+
+      const candidatas = citasTutorCache
+        .map(c => ({
+          ...c,
+          _fecha: c.fechaHora ? new Date(c.fechaHora) : null
+        }))
+        .filter(c =>
+          c._fecha &&
+          c._fecha > ahora &&
+          (c.mascotaNombre || '').toLowerCase() === nombreLower &&
+          (
+            !c.estado ||
+            String(c.estado).toUpperCase() === 'PROGRAMADA' ||
+            String(c.estado).toUpperCase() === 'CONFIRMADA'
+          )
+        )
+        .sort((a, b) => a._fecha - b._fecha);
+
+      return candidatas[0] || null;
+    }
+
+    function renderProximasCitas() {
+      const container = document.getElementById('upcoming-list');
+      if (!container) return;
+
+      container.innerHTML = '';
+      if (!Array.isArray(citasTutorCache) || !citasTutorCache.length) {
+        container.innerHTML = '<p style="color:#666;">No tienes próximas citas.</p>';
+        return;
+      }
+
+      const ahora = new Date();
+      const futuras = citasTutorCache
+        .map(c => ({
+          ...c,
+          _fecha: c.fechaHora ? new Date(c.fechaHora) : null
+        }))
+        .filter(c => c._fecha && c._fecha > ahora && (
+          !c.estado ||
+          String(c.estado).toUpperCase() === 'PROGRAMADA' ||
+          String(c.estado).toUpperCase() === 'CONFIRMADA'
+        ));
+
+      if (!futuras.length) {
+        container.innerHTML = '<p style="color:#666;">No tienes próximas citas.</p>';
+        return;
+      }
+
+      futuras.sort((a, b) => a._fecha - b._fecha);
+
+      futuras.forEach(cita => {
+        const fechaTexto = cita._fecha.toLocaleDateString('es-ES');
+        const horaTexto = cita._fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        const estadoTexto = (cita.estado || 'PROGRAMADA').toString().toUpperCase();
+
+        const div = document.createElement('div');
+        div.className = 'upcoming-appointment';
+        div.innerHTML = `
+          <h4>
+            <i class="fas fa-calendar-alt"></i>
+            ${fechaTexto} ${horaTexto}
+          </h4>
+          <div class="appointment-details">
+            Mascota: ${cita.mascotaNombre || ''}<br>
+            Veterinario: ${cita.veterinarioNombre || ''}<br>
+            Estado: ${estadoTexto}
+          </div>
+          <div class="appointment-actions">
+            <button class="btn-small btn-confirm" type="button"
+                    onclick="tutorConfirmarCita(${cita.id})">
+              Confirmar
+            </button>
+            <button class="btn-small btn-cancel" type="button"
+                    onclick="tutorCancelarCita(${cita.id})">
+              Cancelar
+            </button>
+            <button class="btn-small btn-reschedule" type="button"
+                    onclick="tutorReprogramarCita(${cita.id})">
+              Reprogramar
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function cargarMascotas(tutorIdParam) {
+      const container = document.getElementById('pets-container');
+      const emptyMsg = document.getElementById('no-pets-message');
+      if (!container) return;
+
+      container.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#666;">Cargando mascotas...</p>';
+      if (emptyMsg) emptyMsg.style.display = 'none';
+
+      let tutorId = tutorIdParam || tutorIdCache;
+      if (!tutorId) {
+        tutorId = await obtenerTutorIdActual();
+      }
+      if (!tutorId) {
+        container.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#dc3545;">No se pudo identificar al tutor. Inicia sesión nuevamente.</p>';
+        if (emptyMsg) emptyMsg.style.display = 'block';
+        return;
+      }
+
+      let mascotas = [];
+      try {
+        const resp = await fetch(`/api/mascotas?tutorId=${encodeURIComponent(tutorId)}`);
+        const data = await resp.json().catch(() => []);
+        mascotas = Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.error('No se pudieron cargar las mascotas:', e);
+        container.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#dc3545;">No se pudieron cargar las mascotas.</p>';
+        if (emptyMsg) emptyMsg.style.display = 'block';
+        return;
+      }
+
+      // Sincronizar con localStorage para compatibilidad con AgendaCitaTutor
+      try {
+        const correo = getTutorCorreoForStorage();
+        if (correo) {
+          const clave = `mascotas_${correo}`;
+          const simpleMascotas = mascotas.map(m => ({
+            id: m.id,
+            nombre: m.nombre,
+            especie: m.especie,
+            raza: m.raza,
+            edad: m.edadValor,
+            edadUnidad: m.edadUnidad
+          }));
+          localStorage.setItem(clave, JSON.stringify(simpleMascotas));
+        }
+      } catch (e) {
+        console.warn('No se pudo sincronizar mascotas en localStorage:', e);
+      }
+
+      if (!mascotas.length) {
+        container.innerHTML = '';
+        if (emptyMsg) emptyMsg.style.display = 'block';
+        return;
+      }
+
+      container.innerHTML = '';
+      if (emptyMsg) emptyMsg.style.display = 'none';
+
+      mascotas.forEach(m => {
+        const proxima = obtenerProximaCitaMascota(m.nombre);
+        let proximaHtml = '';
+        if (proxima && proxima._fecha) {
+          const fechaTexto = proxima._fecha.toLocaleDateString('es-ES');
+          const horaTexto = proxima._fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+          const estadoTexto = (proxima.estado || 'PROGRAMADA').toString().toUpperCase();
+          proximaHtml = `
+          <div class="upcoming-appointment">
+            <h4>
+              <i class="fas fa-calendar-alt"></i>
+              Próxima cita: ${fechaTexto} ${horaTexto}
+            </h4>
+            <div class="appointment-details">
+              Veterinario: ${proxima.veterinarioNombre || ''}<br>
+              Estado: ${estadoTexto}
             </div>
+          </div>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'pet-card';
+        card.onclick = function() { verDetallesMascota(m.nombre); };
+
+        const inicial = (m.nombre || 'M').trim().charAt(0).toUpperCase() || 'M';
+        const edadTexto = m.edadValor ? `${m.edadValor} ${m.edadUnidad || ''}` : 'Edad N/D';
+        const razaTexto = m.raza || 'Sin especificar';
+
+        card.innerHTML = `
+          <div class="pet-header">
+            <div class="pet-avatar">${inicial}</div>
             <div class="pet-info">
-              <h3 th:text="${mascota.nombre}">Nombre</h3>
-              <p th:text="${mascota.especie + ' • ' + mascota.edadValor + ' ' + mascota.edadUnidad}">
-                Especie • Edad
-              </p>
+              <h3>${m.nombre || ''}</h3>
+              <p>${m.especie || ''} • ${edadTexto}</p>
             </div>
           </div>
 
           <div class="pet-details">
             <div class="detail-item">
               <i class="fas fa-birthday-cake"></i>
-              <span th:text="${mascota.edadValor + ' ' + mascota.edadUnidad}">Edad</span>
+              <span>${edadTexto}</span>
             </div>
             <div class="detail-item">
               <i class="fas fa-tag"></i>
-              <span th:text="${mascota.raza != null ? mascota.raza : 'Sin especificar'}">Raza</span>
+              <span>${razaTexto}</span>
             </div>
             <div class="detail-item">
               <i class="fas fa-heart"></i>
-              <span th:text="${mascota.especie}">Especie</span>
+              <span>${m.especie || ''}</span>
             </div>
             <div class="detail-item">
               <i class="fas fa-calendar"></i>
@@ -432,37 +699,43 @@
             </div>
           </div>
 
+          ${proximaHtml}
+
           <div class="pet-actions">
-            <button class="btn-small btn-primary"
-                    onclick="event.stopPropagation();"
-                    th:onclick="|event.stopPropagation(); agendarCita('${mascota.nombre}')|">
+            <button class="btn-small btn-primary" type="button"
+                    onclick="event.stopPropagation(); agendarCita('${m.nombre || ''}')">
               <i class="fas fa-calendar-plus"></i> Agendar Cita
             </button>
-            <button class="btn-small btn-secondary"
-                    onclick="event.stopPropagation();"
-                    th:onclick="|event.stopPropagation(); verHistorial('${mascota.nombre}')|">
+            <button class="btn-small btn-secondary" type="button"
+                    onclick="event.stopPropagation(); verHistorial('${m.nombre || ''}')">
               <i class="fas fa-history"></i> Historial
             </button>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
+        `;
 
-  <script>
-	    // Nota: el saludo y la lista de mascotas ahora se cargan desde el servidor (Thymeleaf).
-
-    function obtenerProximaCita(nombreMascota) {
-      const citas = JSON.parse(localStorage.getItem(`citas_${nombreMascota}`) || '[]');
-      const ahora = new Date();
-      
-      // Buscar la próxima cita (fecha futura más cercana)
-      const proximaCita = citas
-        .filter(cita => new Date(cita.fechaCompleta) > ahora)
-        .sort((a, b) => new Date(a.fechaCompleta) - new Date(b.fechaCompleta))[0];
-      
-      return proximaCita;
+        container.appendChild(card);
+      });
     }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Ajustar saludo usando la sesión del tutor
+      const session = getTutorSession();
+      if (session && session.nombre) {
+        const header = document.querySelector('.welcome-section h1');
+        if (header) {
+          header.innerHTML = `<i class="fas fa-heart"></i> ¡Hola, ${session.nombre}!`;
+        }
+      }
+      const tutorId = await obtenerTutorIdActual();
+      if (tutorId) {
+        localStorage.setItem('tutorIdActivo', String(tutorId));
+        await cargarCitasTutor(tutorId);
+        await cargarMascotas(tutorId);
+      } else {
+        await cargarCitasTutor();
+        await cargarMascotas();
+      }
+    });
 
     function verDetallesMascota(nombreMascota, index) {
       localStorage.setItem("mascotaSeleccionada", nombreMascota);
@@ -478,7 +751,8 @@
     }
 
     function mostrarCalendario() {
-      const mascotas = JSON.parse(localStorage.getItem(`mascotas_${tutorActivo}`) || '[]');
+      const correo = getTutorCorreoForStorage();
+      const mascotas = correo ? JSON.parse(localStorage.getItem(`mascotas_${correo}`) || '[]') : [];
       
       if (mascotas.length === 0) {
         alert('Primero debes registrar una mascota para poder agendar citas.');
@@ -503,51 +777,125 @@
       }
     }
 
-    function confirmarCita(nombreMascota) {
-      const citas = JSON.parse(localStorage.getItem(`citas_${nombreMascota}`) || '[]');
-      const cita = citas.find(c => c.estado !== 'confirmada');
-      
-      if (cita) {
-        cita.estado = 'confirmada';
-        localStorage.setItem(`citas_${nombreMascota}`, JSON.stringify(citas));
-        alert(`Cita confirmada para ${nombreMascota}`);
-        cargarMascotas(); // Recargar para actualizar la vista
+    async function actualizarCitaTutor(id, payload) {
+      let tutorId = tutorIdCache;
+      if (!tutorId) {
+        const stored = localStorage.getItem('tutorIdActivo');
+        if (stored) {
+          tutorId = parseInt(stored, 10) || null;
+        }
       }
-    }
-
-    function reprogramarCita(nombreMascota) {
-      if (confirm('¿Deseas reprogramar esta cita? Serás redirigido al calendario.')) {
-        agendarCita(nombreMascota);
+      if (!tutorId) {
+        tutorId = await obtenerTutorIdActual();
       }
-    }
-
-    function cancelarCita(nombreMascota) {
-      if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
-        const citas = JSON.parse(localStorage.getItem(`citas_${nombreMascota}`) || '[]');
-        const citasActualizadas = citas.filter(c => c.estado === 'confirmada');
-        
-        localStorage.setItem(`citas_${nombreMascota}`, JSON.stringify(citasActualizadas));
-        alert('Cita cancelada exitosamente');
-        cargarMascotas(); // Recargar para actualizar la vista
-      }
-    }
-
-    function verHistorial(nombreMascota) {
-      const citas = JSON.parse(localStorage.getItem(`citas_${nombreMascota}`) || '[]');
-      
-      if (citas.length === 0) {
-        alert(`${nombreMascota} no tiene historial de citas aún.`);
+      if (!tutorId) {
+        alert('No se pudo identificar al tutor para actualizar la cita.');
         return;
       }
-      
-      let historial = `Historial de citas de ${nombreMascota}:\n\n`;
-      citas.forEach((cita, index) => {
-        historial += `${index + 1}. ${cita.fecha} - ${cita.hora}\n`;
-        historial += `   Dr. ${cita.veterinario}\n`;
-        historial += `   Estado: ${cita.estado || 'Pendiente'}\n\n`;
+
+      try {
+        const resp = await fetch(`/api/citas/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.assign({ tutorId }, payload || {}))
+        });
+        const data = await resp.json().catch(() => null);
+        if (!resp.ok) {
+          const msg = data && data.message ? data.message : 'No se pudo actualizar la cita.';
+          alert('❌ ' + msg);
+          return;
+        }
+        await cargarCitasTutor(tutorId);
+        await cargarMascotas(tutorId);
+      } catch (e) {
+        console.error('Error actualizando cita como tutor:', e);
+        alert('❌ Error de comunicación con el servidor al actualizar la cita.');
+      }
+    }
+
+    function tutorConfirmarCita(id) {
+      if (!confirm('¿Deseas confirmar esta cita?')) return;
+      actualizarCitaTutor(id, { nuevoEstado: 'CONFIRMADA' });
+    }
+
+    function tutorCancelarCita(id) {
+      if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) return;
+      actualizarCitaTutor(id, { nuevoEstado: 'CANCELADA' });
+    }
+
+    function tutorReprogramarCita(id) {
+      const nuevaFecha = prompt('Ingresa la nueva fecha (formato YYYY-MM-DD):');
+      if (!nuevaFecha) return;
+      const nuevaHora = prompt('Ingresa la nueva hora (formato HH:MM, 24 horas):');
+      if (!nuevaHora) return;
+      const fechaCompleta = new Date(`${nuevaFecha}T${nuevaHora}:00`);
+      if (isNaN(fechaCompleta.getTime())) {
+        alert('❌ Fecha u hora inválidas.');
+        return;
+      }
+      actualizarCitaTutor(id, { nuevaFechaHora: fechaCompleta.toISOString() });
+    }
+
+    async function verHistorial(nombreMascota) {
+      if (!Array.isArray(citasTutorCache) || !citasTutorCache.length) {
+        await cargarCitasTutor();
+      }
+
+      if (!Array.isArray(citasTutorCache) || !citasTutorCache.length) {
+        alert('No tienes historial de citas aún.');
+        return;
+      }
+
+      const todasOrdenadas = [...citasTutorCache].map(c => ({
+        ...c,
+        _fecha: c.fechaHora ? new Date(c.fechaHora) : null
+      })).sort((a, b) => {
+        if (!a._fecha || !b._fecha) return 0;
+        return a._fecha - b._fecha;
       });
-      
-      alert(historial);
+
+      if (nombreMascota) {
+        const nombreLower = nombreMascota.toLowerCase();
+        const citasMascota = todasOrdenadas.filter(c => (c.mascotaNombre || '').toLowerCase() === nombreLower);
+
+        if (!citasMascota.length) {
+          alert(`${nombreMascota} no tiene historial de citas aún.`);
+          return;
+        }
+
+        let historial = `Historial de citas de ${nombreMascota}:\n\n`;
+        citasMascota.forEach((cita, index) => {
+          const fechaTexto = cita._fecha
+            ? cita._fecha.toLocaleDateString('es-ES')
+            : 'Fecha N/D';
+          const horaTexto = cita._fecha
+            ? cita._fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+            : '';
+          const estadoTexto = (cita.estado || 'PROGRAMADA').toString().toUpperCase();
+
+          historial += `${index + 1}. ${fechaTexto} ${horaTexto}\n`;
+          historial += `   Vet. ${cita.veterinarioNombre || ''}\n`;
+          historial += `   Estado: ${estadoTexto}\n\n`;
+        });
+        alert(historial);
+      } else {
+        let historial = 'Historial de todas tus citas:\n\n';
+        todasOrdenadas.forEach((cita, index) => {
+          const fechaTexto = cita._fecha
+            ? cita._fecha.toLocaleDateString('es-ES')
+            : 'Fecha N/D';
+          const horaTexto = cita._fecha
+            ? cita._fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+            : '';
+          const estadoTexto = (cita.estado || 'PROGRAMADA').toString().toUpperCase();
+
+          historial += `${index + 1}. ${fechaTexto} ${horaTexto}\n`;
+          historial += `   Mascota: ${cita.mascotaNombre || ''}\n`;
+          historial += `   Vet. ${cita.veterinarioNombre || ''}\n`;
+          historial += `   Estado: ${estadoTexto}\n\n`;
+        });
+        alert(historial);
+      }
     }
 
     function contactarEmergencia() {
@@ -570,6 +918,7 @@ Para emergencias graves:
       if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
         localStorage.removeItem('tutorActivo');
         localStorage.removeItem('mascotaSeleccionada');
+        localStorage.removeItem('tutorIdActivo');
         alert("Sesión cerrada exitosamente");
         window.location.href = "index.html";
       }

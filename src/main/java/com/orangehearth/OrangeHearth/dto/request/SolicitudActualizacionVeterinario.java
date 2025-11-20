@@ -12,6 +12,7 @@ public record SolicitudActualizacionVeterinario(
     String telefono,
     @NotBlank(message = "La tarjeta profesional es obligatoria")
     String tarjetaProfesional,
-    String especialidad
+    String especialidad,
+    String securityQuestion,
+    String securityAnswer
 ) {}
-

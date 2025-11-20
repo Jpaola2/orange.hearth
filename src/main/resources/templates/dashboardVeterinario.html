@@ -312,6 +312,8 @@
 
   <script>
     let vetActivo = null;
+    let vetIdActivo = null;
+    let citasVetCache = [];
 
     document.addEventListener('DOMContentLoaded', function() {
       vetActivo = JSON.parse(localStorage.getItem("veterinarioActivo"));
@@ -327,6 +329,34 @@
       showSection('inicio');
     });
 
+    async function obtenerVeterinarioIdActual() {
+      if (vetIdActivo) return vetIdActivo;
+      let correo = null;
+      try {
+        const raw = localStorage.getItem("veterinarioActivo") || sessionStorage.getItem("veterinarioActivo");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          correo = parsed.correo || parsed.email || null;
+        }
+      } catch (e) {
+        correo = null;
+      }
+      if (!correo) return null;
+
+      try {
+        const resp = await fetch('/api/veterinarios');
+        const lista = await resp.json().catch(() => []);
+        const veterinarios = Array.isArray(lista) ? lista : [];
+        const correoLower = correo.toLowerCase();
+        const vet = veterinarios.find(v => (v.correo || v.email || '').toLowerCase() === correoLower);
+        vetIdActivo = vet ? vet.id : null;
+        return vetIdActivo;
+      } catch (e) {
+        console.error('No se pudo obtener el veterinario actual desde backend:', e);
+        return null;
+      }
+    }
+
     function showSection(sectionId) {
       document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(sectionId).classList.add('active');
@@ -340,56 +370,132 @@
       if (sectionId === 'pacientes') cargarPacientes();
     }
 
-    function cargarResumen() {
-      const todasLasCitas = JSON.parse(localStorage.getItem('citas')) || [];
-      const citasDelVet = todasLasCitas.filter(c => c.veterinario === vetActivo.nombre);
-      const hoy = new Date().toISOString().slice(0, 10);
+    async function cargarResumen() {
+      const vetId = await obtenerVeterinarioIdActual();
+      if (!vetId) {
+        document.getElementById('citasHoy').textContent = '0';
+        document.getElementById('citasCompletadas').textContent = '0';
+        document.getElementById('pacientesAtendidos').textContent = '0';
+        return;
+      }
 
-      const citasHoy = citasDelVet.filter(c => c.fecha === hoy).length;
-      document.getElementById('citasHoy').textContent = citasHoy;
+      try {
+        const resp = await fetch(`/api/citas?veterinarioId=${encodeURIComponent(vetId)}`);
+        const data = await resp.json().catch(() => []);
+        const citas = Array.isArray(data) ? data : [];
+        const hoy = new Date();
+        const hoyStr = hoy.toISOString().slice(0, 10);
 
-      const esteMes = new Date().getMonth();
-      const citasCompletadas = citasDelVet.filter(c => c.estado === 'completada' && new Date(c.fecha).getMonth() === esteMes).length;
-      document.getElementById('citasCompletadas').textContent = citasCompletadas;
+        const citasHoy = citas.filter(c => {
+          if (!c.fechaHora) return false;
+          const fecha = new Date(c.fechaHora);
+          return fecha.toISOString().slice(0, 10) === hoyStr;
+        }).length;
+        document.getElementById('citasHoy').textContent = citasHoy;
 
-      const pacientesAtendidos = new Set(citasDelVet.filter(c => new Date(c.fecha).getMonth() === esteMes).map(c => c.mascota + c.tutorEmail)).size;
-      document.getElementById('pacientesAtendidos').textContent = pacientesAtendidos;
+        const esteMes = hoy.getMonth();
+        const esteAnio = hoy.getFullYear();
+        const citasCompletadas = citas.filter(c => {
+          if (!c.fechaHora) return false;
+          const fecha = new Date(c.fechaHora);
+          const estado = (c.estado || '').toString().toUpperCase();
+          return fecha.getMonth() === esteMes && fecha.getFullYear() === esteAnio && estado === 'COMPLETADA';
+        }).length;
+        document.getElementById('citasCompletadas').textContent = citasCompletadas;
+
+        const pacientesSet = new Set();
+        citas.forEach(c => {
+          if (!c.fechaHora) return;
+          const fecha = new Date(c.fechaHora);
+          if (fecha.getMonth() === esteMes && fecha.getFullYear() === esteAnio) {
+            pacientesSet.add(`${c.tutorId || ''}-${c.mascotaId || ''}`);
+          }
+        });
+        document.getElementById('pacientesAtendidos').textContent = pacientesSet.size;
+      } catch (e) {
+        console.error('No se pudo cargar el resumen de citas del veterinario:', e);
+      }
     }
 
-    function cargarAgenda() {
-      const todasLasCitas = JSON.parse(localStorage.getItem('citas')) || [];
+    async function cargarAgenda() {
+      const tbody = document.getElementById('agenda-body');
+      if (!tbody) return;
+
+      const vetId = await obtenerVeterinarioIdActual();
+      if (!vetId) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No se pudo identificar al veterinario.</td></tr>';
+        return;
+      }
+
       const filtroFecha = document.getElementById('filtro-fecha-agenda').value;
       const filtroEstado = document.getElementById('filtro-estado-agenda').value;
 
-      let citasFiltradas = todasLasCitas.filter(c => c.veterinario === vetActivo.nombre);
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Cargando citas...</td></tr>';
+      try {
+        const resp = await fetch(`/api/citas?veterinarioId=${encodeURIComponent(vetId)}`);
+        const data = await resp.json().catch(() => []);
+        citasVetCache = Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.error('No se pudieron cargar las citas del veterinario:', e);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc3545;">No se pudieron cargar las citas.</td></tr>';
+        return;
+      }
+
+      let citasFiltradas = citasVetCache.slice();
 
       if (filtroFecha) {
-        citasFiltradas = citasFiltradas.filter(c => c.fecha === filtroFecha);
+        citasFiltradas = citasFiltradas.filter(c => {
+          if (!c.fechaHora) return false;
+          const fecha = new Date(c.fechaHora);
+          return fecha.toISOString().slice(0, 10) === filtroFecha;
+        });
       }
       if (filtroEstado) {
-        citasFiltradas = citasFiltradas.filter(c => c.estado === filtroEstado);
+        const filtro = filtroEstado.toLowerCase();
+        citasFiltradas = citasFiltradas.filter(c => (c.estado || '').toString().toLowerCase() === filtro);
       }
 
-      const tbody = document.getElementById('agenda-body');
       tbody.innerHTML = '';
-      if (citasFiltradas.length === 0) {
+      if (!citasFiltradas.length) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay citas que coincidan con los filtros.</td></tr>';
         return;
       }
 
-      citasFiltradas.sort((a, b) => a.hora.localeCompare(b.hora)).forEach(cita => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
-          <td>${cita.hora}</td>
-          <td>${cita.mascota}</td>
-          <td>${cita.tutorEmail.split('@')[0]}</td>
-          <td>${cita.motivo}</td>
-          <td><span class="badge ${cita.estado}">${cita.estado}</span></td>
+      citasFiltradas
+        .map(c => ({
+          ...c,
+          _fecha: c.fechaHora ? new Date(c.fechaHora) : null
+        }))
+        .sort((a, b) => {
+          if (!a._fecha || !b._fecha) return 0;
+          return a._fecha - b._fecha;
+        })
+        .forEach(cita => {
+          const fecha = cita._fecha;
+          const horaTexto = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+          const tutorTexto = cita.tutorNombre || (cita.tutorCorreo || '').split('@')[0] || '';
+          const estadoRaw = (cita.estado || 'PROGRAMADA').toString().toLowerCase();
+          const estadoTexto = estadoRaw.charAt(0).toUpperCase() + estadoRaw.slice(1);
+
+          const row = tbody.insertRow();
+          row.innerHTML = `
+          <td>${horaTexto}</td>
+          <td>${cita.mascotaNombre || ''}</td>
+          <td>${tutorTexto}</td>
+          <td>${cita.motivo || ''}</td>
+          <td><span class="badge ${estadoRaw}">${estadoTexto}</span></td>
           <td>
-            <button class="btn-secondary" style="padding: 5px 10px;" onclick="verHistorial('${cita.tutorEmail}', '${cita.mascota}')">Ver Historial</button>
+            <button class="btn-secondary" style="padding: 5px 8px; margin-right: 4px;"
+                    onclick="verHistorial('${cita.tutorCorreo || ''}', '${cita.mascotaNombre || ''}')">Historial</button>
+            <button class="btn-secondary" style="padding: 5px 8px; margin-right: 4px;"
+                    onclick="vetConfirmarCita(${cita.id})">Confirmar</button>
+            <button class="btn-secondary" style="padding: 5px 8px; margin-right: 4px;"
+                    onclick="vetCancelarCita(${cita.id})">Cancelar</button>
+            <button class="btn-secondary" style="padding: 5px 8px;"
+                    onclick="vetReprogramarCita(${cita.id})">Reprogramar</button>
           </td>
         `;
-      });
+        });
     }
 
     function cargarPacientes() {
@@ -425,27 +531,65 @@
       }
     }
 
-    function verHistorial(tutorEmail, mascotaNombre) {
-      const todasLasCitas = JSON.parse(localStorage.getItem('citas')) || [];
-      const historial = todasLasCitas.filter(c => c.tutorEmail === tutorEmail && c.mascota === mascotaNombre);
+    async function verHistorial(tutorEmail, mascotaNombre) {
+      const vetId = await obtenerVeterinarioIdActual();
+      if (!vetId) {
+        alert('No se pudo identificar al veterinario para cargar el historial.');
+        return;
+      }
+
+      if (!Array.isArray(citasVetCache) || !citasVetCache.length) {
+        try {
+          const resp = await fetch(`/api/citas?veterinarioId=${encodeURIComponent(vetId)}`);
+          const data = await resp.json().catch(() => []);
+          citasVetCache = Array.isArray(data) ? data : [];
+        } catch (e) {
+          console.error('No se pudo cargar el historial de citas desde backend:', e);
+          alert('No se pudo cargar el historial de citas.');
+          return;
+        }
+      }
+
+      const emailLower = (tutorEmail || '').toLowerCase();
+      const mascotaLower = (mascotaNombre || '').toLowerCase();
+
+      const historial = citasVetCache
+        .map(c => ({
+          ...c,
+          _fecha: c.fechaHora ? new Date(c.fechaHora) : null
+        }))
+        .filter(c =>
+          (c.tutorCorreo || '').toLowerCase() === emailLower &&
+          (c.mascotaNombre || '').toLowerCase() === mascotaLower
+        )
+        .sort((a, b) => {
+          if (!a._fecha || !b._fecha) return 0;
+          return b._fecha - a._fecha;
+        });
       
-      if (historial.length === 0) {
+      if (!historial.length) {
         alert(`No hay historial de citas para ${mascotaNombre}.`);
         return;
       }
 
-      let mensaje = `Historial Clínico de ${mascotaNombre}:\n\n`;
-      historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach(cita => {
-        mensaje += `Fecha: ${cita.fecha} a las ${cita.hora}\n`;
-        mensaje += `Motivo: ${cita.motivo}\n`;
-        mensaje += `Atendido por: ${cita.veterinario}\n`;
-        mensaje += `Estado: ${cita.estado}\n`;
+        let mensaje = `Historial Clínico de ${mascotaNombre}:\n\n`;
+      historial.forEach(cita => {
+        const fecha = cita._fecha;
+        const fechaTexto = fecha ? fecha.toLocaleDateString('es-ES') : 'Fecha N/D';
+        const horaTexto = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+        const estadoTexto = (cita.estado || 'PROGRAMADA').toString().toUpperCase();
+
+        mensaje += `Fecha: ${fechaTexto} a las ${horaTexto}\n`;
+        mensaje += `Motivo: ${cita.motivo || 'Sin motivo registrado'}\n`;
+        const nombreVet = cita.veterinarioNombre || (vetActivo && vetActivo.nombre ? vetActivo.nombre : '');
+        mensaje += `Atendido por: ${nombreVet}\n`;
+        mensaje += `Estado: ${estadoTexto}\n`;
         mensaje += `----------------------------\n`;
       });
       alert(mensaje);
     }
 
-    function generarReporte() {
+    async function generarReporte() {
       const fechaInicio = document.getElementById('reporte-fecha-inicio').value;
       const fechaFin = document.getElementById('reporte-fecha-fin').value;
 
@@ -454,25 +598,92 @@
         return;
       }
 
-      const todasLasCitas = JSON.parse(localStorage.getItem('citas')) || [];
-      const citasDelVet = todasLasCitas.filter(c => 
-        c.veterinario === vetActivo.nombre &&
-        c.fecha >= fechaInicio &&
-        c.fecha <= fechaFin
-      );
-
-      if (citasDelVet.length === 0) {
-        alert("No se encontraron citas completadas en el rango de fechas seleccionado.");
+      const vetId = await obtenerVeterinarioIdActual();
+      if (!vetId) {
+        alert('No se pudo identificar al veterinario para generar el reporte.');
         return;
       }
 
-      let reporte = `Reporte de Citas Atendidas por ${vetActivo.nombre}\n`;
-      reporte += `Desde: ${fechaInicio} | Hasta: ${fechaFin}\n\n`;
-      citasDelVet.forEach(cita => {
-        reporte += `Fecha: ${cita.fecha} | Paciente: ${cita.mascota} | Tutor: ${cita.tutorEmail} | Estado: ${cita.estado}\n`;
-      });
+      try {
+        const resp = await fetch(`/api/citas?veterinarioId=${encodeURIComponent(vetId)}`);
+        const data = await resp.json().catch(() => []);
+        const citasDelVet = (Array.isArray(data) ? data : []).filter(c => {
+          if (!c.fechaHora) return false;
+          const fecha = new Date(c.fechaHora);
+          const fechaStr = fecha.toISOString().slice(0, 10);
+          return fechaStr >= fechaInicio && fechaStr <= fechaFin;
+        });
 
-      alert("Simulación de Reporte Generado:\n\n" + reporte);
+        if (!citasDelVet.length) {
+          alert("No se encontraron citas en el rango de fechas seleccionado.");
+          return;
+        }
+
+        const nombreVet = vetActivo && vetActivo.nombre ? vetActivo.nombre : '';
+        let reporte = `Reporte de Citas Atendidas por ${nombreVet}\n`;
+        reporte += `Desde: ${fechaInicio} | Hasta: ${fechaFin}\n\n`;
+        citasDelVet.forEach(cita => {
+          const fecha = cita.fechaHora ? new Date(cita.fechaHora) : null;
+          const fechaTexto = fecha ? fecha.toLocaleDateString('es-ES') : 'Fecha N/D';
+          const horaTexto = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+          const estadoTexto = (cita.estado || 'PROGRAMADA').toString().toUpperCase();
+          reporte += `Fecha: ${fechaTexto} ${horaTexto} | Paciente: ${cita.mascotaNombre || ''} | Tutor: ${cita.tutorCorreo || ''} | Estado: ${estadoTexto}\n`;
+        });
+
+        alert("Simulación de Reporte Generado:\n\n" + reporte);
+      } catch (e) {
+        console.error('No se pudo generar el reporte de citas:', e);
+        alert('No se pudo generar el reporte de citas.');
+      }
+    }
+
+    async function vetActualizarCita(id, payload) {
+      const vetId = await obtenerVeterinarioIdActual();
+      if (!vetId) {
+        alert('No se pudo identificar al veterinario para actualizar la cita.');
+        return;
+      }
+      try {
+        const resp = await fetch(`/api/citas/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.assign({ veterinarioId: vetId }, payload || {}))
+        });
+        const data = await resp.json().catch(() => null);
+        if (!resp.ok) {
+          const msg = data && data.message ? data.message : 'No se pudo actualizar la cita.';
+          alert('❌ ' + msg);
+          return;
+        }
+        await cargarAgenda();
+        await cargarResumen();
+      } catch (e) {
+        console.error('Error actualizando cita como veterinario:', e);
+        alert('❌ Error de comunicación con el servidor al actualizar la cita.');
+      }
+    }
+
+    function vetConfirmarCita(id) {
+      if (!confirm('¿Deseas confirmar esta cita?')) return;
+      vetActualizarCita(id, { nuevoEstado: 'CONFIRMADA' });
+    }
+
+    function vetCancelarCita(id) {
+      if (!confirm('¿Deseas cancelar esta cita?')) return;
+      vetActualizarCita(id, { nuevoEstado: 'CANCELADA' });
+    }
+
+    function vetReprogramarCita(id) {
+      const nuevaFecha = prompt('Ingresa la nueva fecha (formato YYYY-MM-DD):');
+      if (!nuevaFecha) return;
+      const nuevaHora = prompt('Ingresa la nueva hora (formato HH:MM, 24 horas):');
+      if (!nuevaHora) return;
+      const fechaCompleta = new Date(`${nuevaFecha}T${nuevaHora}:00`);
+      if (isNaN(fechaCompleta.getTime())) {
+        alert('❌ Fecha u hora inválidas.');
+        return;
+      }
+      vetActualizarCita(id, { nuevaFechaHora: fechaCompleta.toISOString() });
     }
 
     function cerrarSesion() {

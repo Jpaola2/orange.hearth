@@ -8,10 +8,9 @@
   <title>Gerencia - ORANGE HEARTH</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Librerías para exportar a PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf-autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
@@ -444,7 +443,6 @@
       <h2><i class="fas fa-cog"></i> Gerencia</h2>
       <ul>
         <li><a href="#" onclick="showSection('resumen')" class="active"><i class="fas fa-chart-pie"></i> Resumen General</a></li>
-        <li><a href="#" onclick="showSection('estadisticas')"><i class="fas fa-chart-line"></i> Estadísticas</a></li>
         <!-- Accesos Directos eliminado por solicitud -->
         <li><a href="#" onclick="showSection('actividades')"><i class="fas fa-history"></i> Últimas Actividades</a></li>
         <li><a href="#" onclick="showSection('usuarios')"><i class="fas fa-users"></i> Administrar Usuarios</a></li>
@@ -485,27 +483,6 @@
 	        </div>
 	      </section>
 
-	      <section id="estadisticas" class="section">
-        <h3><i class="fas fa-chart-line"></i> Estadísticas Detalladas</h3>
-        <div class="chart-grid">
-          <div class="chart-item">
-            <div class="chart-container">
-              <h4>Registros de Usuarios por Mes (Últimos 6 meses)</h4>
-              <canvas id="monthlyChart" width="400" height="300"></canvas>
-            </div>
-          </div>
-          <div class="chart-item">
-            <div class="chart-container">
-              <h4>Especies de Mascotas más Registradas</h4>
-              <canvas id="speciesChart" width="400" height="300"></canvas>
-            </div>
-          </div>
-        </div>
-        <div class="chart-container">
-          <h4>Actividad del Sistema (Últimos 7 días)</h4>
-          <canvas id="activityChart" width="400" height="200"></canvas>
-        </div>
-      </section>
       
       <!-- Sección de Accesos Directos eliminada -->
 
@@ -540,6 +517,7 @@
                             <option value="">Todos</option>
                             <option value="activo">Activo</option>
                             <option value="inactivo">Inactivo</option>
+                            <option value="pendiente">Pendiente</option>
                         </select>
                     </div>
                     <div>
@@ -759,6 +737,22 @@
                             <input type="password" id="vet-password" name="password" required placeholder="Contraseña segura" oninput="validateField(this)">
                             <span class="validation-error" id="error-vet-password"></span>
                         </div>
+                        <div class="form-group">
+                            <label for="vet-security-question">Pregunta de seguridad</label>
+                            <select id="vet-security-question" name="securityQuestion" required onchange="validateField(this)">
+                                <option value="">-- Selecciona una pregunta --</option>
+                                <option value="¿De qué universidad eres egresado?">¿De qué universidad eres egresado?</option>
+                                <option value="¿En qué año te graduaste?">¿En qué año te graduaste?</option>
+                                <option value="¿Cuál es tu especialidad principal?">¿Cuál es tu especialidad principal?</option>
+                            </select>
+                            <span class="validation-error" id="error-vet-security-question"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="vet-security-answer">Respuesta de seguridad</label>
+                            <input type="text" id="vet-security-answer" name="securityAnswer" required placeholder="Escribe la respuesta secreta" oninput="validateField(this)">
+                            <span class="validation-error" id="error-vet-security-answer"></span>
+                            <small style="display:block; margin-top:4px; color:#555;">Se utilizará para verificar la identidad del veterinario si olvida su contraseña.</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -841,6 +835,21 @@
                  <label for="modal-vet-especialidad">Especialidad</label>
                  <select id="modal-vet-especialidad" name="especialidad">
                       </select>
+             </div>
+             <div class="form-group">
+                 <label for="modal-vet-security-question">Pregunta de seguridad</label>
+                 <select id="modal-vet-security-question" name="securityQuestion">
+                     <option value="">-- Selecciona una pregunta --</option>
+                     <option value="¿De qué universidad eres egresado?">¿De qué universidad eres egresado?</option>
+                     <option value="¿En qué año te graduaste?">¿En qué año te graduaste?</option>
+                     <option value="¿Cuál es tu especialidad principal?">¿Cuál es tu especialidad principal?</option>
+                 </select>
+                 <small style="display:block; margin-top:4px; color:#555;">Por seguridad no se muestra la respuesta actual. Puedes cambiar la pregunta si el veterinario lo requiere.</small>
+             </div>
+             <div class="form-group">
+                 <label for="modal-vet-security-answer">Nueva respuesta de seguridad</label>
+                 <input type="text" id="modal-vet-security-answer" name="securityAnswer" placeholder="Opcional: define una nueva respuesta">
+                 <small style="display:block; margin-top:4px; color:#555;">Si llenas este campo, se reemplazará la respuesta de seguridad previa.</small>
              </div>
         </div>
         
@@ -925,14 +934,9 @@
     //   }
     // }
 
-    // =========================================================
-    //                      VARIABLES GLOBALES PARA GRÁFICOS
-    // =========================================================
-    // let userTypeChartInstance, monthlyChartInstance, speciesChartInstance, activityChartInstance;
-    // let allUsersCache = []; // Cache para la tabla de usuarios (mock)
-    // Caches de datos reales para filtros en memoria
-    let tutoresCache = [];
-    let vetsCache = [];
+	    // Caches de datos reales para filtros en memoria
+	    let tutoresCache = [];
+	    let vetsCache = [];
 
     // =========================================================
     //                      SECCIÓN PRINCIPAL / INICIALIZACIÓN
@@ -961,9 +965,9 @@
         targetSection.classList.add('active');
         
         // Lógica para re-cargar/actualizar si es necesario al hacer visible
-        if (sectionId === 'estadisticas') {
-             // Re-renderizar todos los gráficos detallados para asegurar dimensiones correctas
-             renderCharts();
+        if (sectionId === 'resumen') {
+             // Al volver al resumen, refrescar conteos desde backend
+             cargarResumenGeneral();
         }
         if (sectionId === 'usuarios') {
              cargarTablaTutores(); // Refrescar la tabla de tutores
@@ -993,29 +997,65 @@
             const lista = await resp.json().catch(()=>[]);
             let data = Array.isArray(lista) ? lista : [];
             tutoresCache = data;
-            // Popular especies únicas en el filtro
+            // Popular especies únicas en el filtro, usando nombres técnicos (Canino, Felino, etc.)
             try {
               const speciesSelect = document.getElementById('tutor-search-species');
               if (speciesSelect) {
-                const especies = Array.from(new Set((data||[]).flatMap(t => (t.mascotas||[]).map(m => (m.especie||'').trim())).filter(Boolean))).sort();
+                const rawSpecies = (data||[])
+                  .flatMap(t => (t.mascotas||[]).map(m => (m.especie||'').trim()))
+                  .filter(Boolean);
+                const speciesMap = {};
+                rawSpecies.forEach(raw => {
+                  const norm = raw.trim();
+                  if (!norm) return;
+                  const lower = norm.toLowerCase();
+                  let key;
+                  let label;
+                  if (lower === 'perro' || lower === 'canino') {
+                    key = 'CANINO';
+                    label = 'Canino';
+                  } else if (lower === 'gato' || lower === 'felino') {
+                    key = 'FELINO';
+                    label = 'Felino';
+                  } else {
+                    key = norm.toUpperCase();
+                    label = norm;
+                  }
+                  if (!speciesMap[key]) {
+                    speciesMap[key] = label;
+                  }
+                });
                 const current = speciesSelect.value;
-                speciesSelect.innerHTML = '<option value="">Todas</option>' + especies.map(e => `<option value="${e}">${e}</option>`).join('');
-                if (current && Array.from(speciesSelect.options).some(o => o.value === current)) speciesSelect.value = current;
+                const entries = Object.entries(speciesMap).sort((a,b) => a[1].localeCompare(b[1]));
+                speciesSelect.innerHTML = '<option value=\"\">Todas</option>'
+                  + entries.map(([key,label]) => `<option value=\"${key}\">${label}</option>`).join('');
+                if (current && Array.from(speciesSelect.options).some(o => o.value === current)) {
+                  speciesSelect.value = current;
+                }
               }
             } catch (e) { /* ignore UI errors */ }
             if (filtered) data = filtered;
             tbody.innerHTML = '';
             data.forEach(t => {
                 const tr = document.createElement('tr');
-                const estado = (t.estado||'ACTIVE').toUpperCase();
-                const estadoClass = estado==='INACTIVE' ? 'inactivo' : (estado==='PENDING' ? 'pendiente' : 'activo');
+                const estadoRaw = (t.estado || 'ACTIVE');
+                const estadoUpper = String(estadoRaw).toUpperCase();
+                let estadoTexto = 'Activo';
+                let estadoClass = 'activo';
+                if (estadoUpper === 'INACTIVE') {
+                    estadoTexto = 'Inactivo';
+                    estadoClass = 'inactivo';
+                } else if (estadoUpper === 'PENDING') {
+                    estadoTexto = 'Pendiente';
+                    estadoClass = 'pendiente';
+                }
                 const mascotaNombres = (t.mascotas||[]).map(m=>m.nombre).join(', ');
                 tr.innerHTML = `
                   <td data-label="Nombre">${t.nombreCompleto || ''}</td>
                   <td data-label="Email">${t.correo || ''}</td>
                   <td data-label="Teléfono">${t.telefono || ''}</td>
                   <td data-label="Mascotas">${(t.mascotas||[]).length}${mascotaNombres? ` - ${mascotaNombres}`:''}</td>
-                  <td data-label="Estado"><span class="badge ${estadoClass}">${estado}</span></td>
+                  <td data-label="Estado"><span class="badge ${estadoClass}">${estadoTexto}</span></td>
                   <td data-label="Acciones">
                     <button class="btn btn-secondary" onclick="openModificationModal('tutor', ${t.id})"><i class="fas fa-edit"></i> Modificar</button>
                   </td>`;
@@ -1031,13 +1071,13 @@
 
     function filterTutores() {
         const text = (document.getElementById('tutor-search-text')?.value || '').toLowerCase();
-        const estado = (document.getElementById('tutor-search-status')?.value || '').toLowerCase();
+        const estadoSel = (document.getElementById('tutor-search-status')?.value || '').toLowerCase();
         const doc = (document.getElementById('tutor-search-doc')?.value || '').toLowerCase();
         const minPetsRaw = document.getElementById('tutor-search-minpets')?.value || '';
         const minPets = minPetsRaw === '' ? null : parseInt(minPetsRaw, 10);
-        const species = (document.getElementById('tutor-search-species')?.value || '').toLowerCase();
+        const speciesKey = (document.getElementById('tutor-search-species')?.value || '');
         // Si no hay ningún criterio, recargar completo
-        if (!text && !estado && !doc && (minPets===null) && !species) { cargarTablaTutores(); return; }
+        if (!text && !estadoSel && !doc && (minPets===null) && !speciesKey) { cargarTablaTutores(); return; }
         const source = Array.isArray(tutoresCache) ? tutoresCache : [];
         const filtered = source.filter(t => {
             const nombre = (t.nombreCompleto||'').toLowerCase();
@@ -1046,12 +1086,27 @@
             const documento = (t.documento||'').toLowerCase();
             const mascotas = Array.isArray(t.mascotas) ? t.mascotas : [];
             const countMasc = mascotas.length;
-            const especiesTutor = new Set(mascotas.map(m => (m.especie||'').toLowerCase()));
+            const especiesTutor = new Set(mascotas.map(m => {
+                const norm = (m.especie||'').trim();
+                if (!norm) return null;
+                const lower = norm.toLowerCase();
+                if (lower === 'perro' || lower === 'canino') return 'CANINO';
+                if (lower === 'gato' || lower === 'felino') return 'FELINO';
+                return norm.toUpperCase();
+            }).filter(Boolean));
+            const estadoRaw = (t.estado || 'ACTIVE');
+            const estadoUpper = String(estadoRaw).toUpperCase();
+            let estado = 'activo';
+            if (estadoUpper === 'INACTIVE') {
+                estado = 'inactivo';
+            } else if (estadoUpper === 'PENDING') {
+                estado = 'pendiente';
+            }
             const matchText = !text || nombre.includes(text) || correo.includes(text) || telefono.includes(text);
-            const matchEstado = !estado || estado === 'activo'; // tutores sin estado en legado
+            const matchEstado = !estadoSel || estado === estadoSel; // tutores sin estado en legado se consideran "activo"
             const matchDoc = !doc || documento.includes(doc);
             const matchCount = (minPets===null) || (countMasc >= minPets);
-            const matchSpecies = !species || especiesTutor.has(species);
+            const matchSpecies = !speciesKey || especiesTutor.has(speciesKey);
             return matchText && matchEstado && matchDoc && matchCount && matchSpecies;
         });
         cargarTablaTutores(filtered);
@@ -1067,20 +1122,46 @@
         const token = localStorage.getItem('adminSessionToken');
         if (!token) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Inicia sesión como Gerente.</td></tr>'; return; }
         try {
-            let resp = await fetch('/api/admin/veterinarios', { headers: { 'X-ADMIN-TOKEN': token.replace(/"/g,'') } });
-            let lista = await resp.json().catch(()=>[]);
+            const resp = await fetch('/api/admin/veterinarios', { headers: { 'X-ADMIN-TOKEN': token.replace(/\"/g,'') } });
+            if (!resp.ok) {
+                // Mostrar mensaje claro cuando el backend rechaza la petición (token inválido, error, etc.)
+                let errorMessage = 'No se pudo cargar la lista de veterinarios.';
+                try {
+                    const maybeJson = await resp.json();
+                    if (maybeJson && typeof maybeJson.message === 'string') {
+                        errorMessage += ' ' + maybeJson.message;
+                    }
+                } catch (e) {
+                    // Si no es JSON, ignorar y usar mensaje genérico
+                }
+                console.error('Error al obtener veterinarios. HTTP', resp.status, errorMessage);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#dc3545;">${errorMessage}</td></tr>`;
+                return;
+            }
+            const lista = await resp.json().catch(()=>[]);
             let data = Array.isArray(lista) ? lista : [];
             vetsCache = data;
             if (filtered) data = filtered;
             tbody.innerHTML = '';
             data.forEach(v => {
                 const tr = document.createElement('tr');
+                const estadoRaw = (v.estado || v.status || 'ACTIVE');
+                const estadoUpper = String(estadoRaw).toUpperCase();
+                let estadoTexto = 'Activo';
+                let estadoClass = 'activo';
+                if (estadoUpper === 'INACTIVE') {
+                    estadoTexto = 'Inactivo';
+                    estadoClass = 'inactivo';
+                } else if (estadoUpper === 'PENDING') {
+                    estadoTexto = 'Pendiente';
+                    estadoClass = 'pendiente';
+                }
                 tr.innerHTML = `
                   <td data-label="Nombre">${v.nombreCompleto||v.nombre||''}</td>
                   <td data-label="Email">${v.correo||v.email||''}</td>
                   <td data-label="Especialidad">${v.especialidad||'N/A'}</td>
                   <td data-label="Tarjeta">${v.tarjetaProfesional||v.professionalLicense||''}</td>
-                  <td data-label="Estado"><span class="badge ${(v.estado||v.status)==='INACTIVE'?'inactivo':((v.estado||v.status)==='PENDING'?'pendiente':'activo')}">${(v.estado||v.status)||'ACTIVE'}</span></td>
+                  <td data-label="Estado"><span class="badge ${estadoClass}">${estadoTexto}</span></td>
                   <td data-label="Acciones"><button class="btn btn-secondary" onclick="openModificationModal('veterinario', ${v.id})"><i class="fas fa-edit"></i> Modificar</button></td>`;
                 tbody.appendChild(tr);
             });
@@ -1102,7 +1183,14 @@
             const correo = (v.correo||'').toLowerCase();
             const especialidad = (v.especialidad||'').toLowerCase();
             const tarjeta = (v.tarjetaProfesional||'').toLowerCase();
-            const estado = (v.estado||'ACTIVE').toLowerCase();
+            const estadoRaw = (v.estado || v.status || 'ACTIVE');
+            const estadoUpper = String(estadoRaw).toUpperCase();
+            let estado = 'activo';
+            if (estadoUpper === 'INACTIVE') {
+                estado = 'inactivo';
+            } else if (estadoUpper === 'PENDING') {
+                estado = 'pendiente';
+            }
             const matchText = !text || nombre.includes(text) || correo.includes(text) || especialidad.includes(text) || tarjeta.includes(text);
             const matchEstado = !estadoSel || estado === estadoSel;
             return matchText && matchEstado;
@@ -1191,33 +1279,72 @@
     // =========================================================
     //                      RESUMEN GENERAL (Sección 1)
     // =========================================================
-    function cargarResumenGeneral() {
-        const tutores = JSON.parse(localStorage.getItem('registrosUsuarios')) || [];
-        const veterinarios = JSON.parse(localStorage.getItem('veterinarios')) || [];
-        const citas = JSON.parse(localStorage.getItem('citas')) || [];
-        
-        const totalUsuarios = tutores.length + veterinarios.length;
-        document.getElementById('totalUsuarios').textContent = totalUsuarios;
-        
-        let totalMascotas = 0;
-        let mascotasAngelito = 0;
-        tutores.forEach(tutor => {
-            const mascotas = JSON.parse(localStorage.getItem(`mascotas_${tutor.correo}`)) || [];
-            totalMascotas += mascotas.length;
-            mascotasAngelito += mascotas.filter(m => m.estado_mascota === 'angelito').length;
-        });
-        
-        document.getElementById('totalMascotas').textContent = totalMascotas;
-        document.getElementById('mascotasAngelito').textContent = mascotasAngelito;
-        
-        const vetsActivos = veterinarios.filter(v => v.estado === 'activo').length;
-        document.getElementById('totalVeterinarios').textContent = vetsActivos;
-        
-        const citasPendientes = citas.filter(c => c.estado === 'programada' || c.estado === 'confirmada').length;
-        document.getElementById('citasPendientes').textContent = citasPendientes;
-        
-        // Mock data para Historiales
-        document.getElementById('historialesCreados').textContent = citas.filter(c => c.estado === 'completada').length + 5;
+    async function cargarResumenGeneral() {
+        const totalUsuariosEl = document.getElementById('totalUsuarios');
+        const totalMascotasEl = document.getElementById('totalMascotas');
+        const totalVetsEl = document.getElementById('totalVeterinarios');
+        const citasPendientesEl = document.getElementById('citasPendientes');
+        const historialesEl = document.getElementById('historialesCreados');
+        const mascotasAngelitoEl = document.getElementById('mascotasAngelito');
+
+        try {
+            // Reutilizar endpoints reales que alimentan las tablas de gestión
+            const tutoresPromise = fetch('/api/tutores')
+                .then(r => r.ok ? r.json() : [])
+                .catch(() => []);
+
+            const vetsPromise = (async () => {
+                const token = (localStorage.getItem('adminSessionToken') || '').replace(/"/g, '');
+                if (!token) return [];
+                try {
+                    const resp = await fetch('/api/admin/veterinarios', { headers: { 'X-ADMIN-TOKEN': token } });
+                    return resp.ok ? resp.json() : [];
+                } catch (e) {
+                    return [];
+                }
+            })();
+
+            // Citas médicas desde backend
+            const citasPromise = fetch('/api/citas')
+                .then(r => r.ok ? r.json() : [])
+                .catch(() => []);
+
+            const [tutoresLista, vetsLista, citasLista] = await Promise.all([tutoresPromise, vetsPromise, citasPromise]);
+            const tutores = Array.isArray(tutoresLista) ? tutoresLista : [];
+            const veterinarios = Array.isArray(vetsLista) ? vetsLista : [];
+
+            const totalUsuarios = tutores.length + veterinarios.length;
+            if (totalUsuariosEl) totalUsuariosEl.textContent = totalUsuarios;
+
+            const totalMascotas = tutores.reduce((acc, t) => {
+                const mascotas = Array.isArray(t.mascotas) ? t.mascotas : [];
+                return acc + mascotas.length;
+            }, 0);
+            if (totalMascotasEl) totalMascotasEl.textContent = totalMascotas;
+
+            const vetsActivos = veterinarios.filter(v => {
+                const estadoRaw = (v.estado || v.status || 'ACTIVE');
+                const estado = String(estadoRaw).toUpperCase();
+                return estado === 'ACTIVE';
+            }).length;
+            if (totalVetsEl) totalVetsEl.textContent = vetsActivos;
+
+            const citas = Array.isArray(citasLista) ? citasLista : [];
+            const pendientes = citas.filter(c => {
+                const estado = (c.estado || '').toUpperCase();
+                return estado === 'PROGRAMADA' || estado === 'CONFIRMADA';
+            }).length;
+            if (citasPendientesEl) citasPendientesEl.textContent = pendientes;
+
+            if (historialesEl) historialesEl.textContent = citas.length;
+
+            // El backend actual no maneja estado de mascotas fallecidas,
+            // por lo que este valor se mantiene en 0 real.
+            if (mascotasAngelitoEl) mascotasAngelitoEl.textContent = 0;
+        } catch (e) {
+            // En caso de error, no sobreescribir valores previos visibles
+            console.error('No se pudo cargar el resumen gerencial:', e);
+        }
     }
     
     // =========================================================
@@ -1320,21 +1447,200 @@
         URL.revokeObjectURL(url);
     }
 
-    function exportToPDF(tableId, title) {
+    // =========================================================
+    //                 ESTILOS COMUNES PARA REPORTES PDF
+    // =========================================================
+    const ORANGE_PDF_COLORS = {
+        naranja: [242, 140, 40],
+        naranjaOscuro: [216, 111, 0],
+        azulOscuro: [45, 47, 86],
+        fondo: [255, 248, 240],
+        gris: [108, 117, 125],
+        verde: [40, 167, 69]
+    };
+
+    let orangePdfLogoDataUrl = null;
+
+    function formatReportDateTime() {
+        const now = new Date();
+        const dd = String(now.getDate()).padStart(2, '0');
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const yy = String(now.getFullYear()).slice(-2);
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        return `${dd}/${mm}/${yy}, ${hh}:${min}`;
+    }
+
+    function loadOrangeHearthLogoForPdf() {
+        if (orangePdfLogoDataUrl) {
+            return Promise.resolve(orangePdfLogoDataUrl);
+        }
+        return new Promise((resolve) => {
+            try {
+                const img = new Image();
+                img.onload = function () {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        orangePdfLogoDataUrl = canvas.toDataURL('image/png');
+                        resolve(orangePdfLogoDataUrl);
+                    } catch (e) {
+                        console.error('No se pudo procesar el logo para el PDF:', e);
+                        resolve(null);
+                    }
+                };
+                img.onerror = function () {
+                    resolve(null);
+                };
+                img.src = 'imagenes/LogoOrangeHearth.png';
+            } catch (e) {
+                console.error('No se pudo cargar el logo para el PDF:', e);
+                resolve(null);
+            }
+        });
+    }
+
+    async function buildOrangeHearthPDF(options) {
+        const { title, columns, rows, filename } = options || {};
+        const jspdf = window.jspdf;
+        if (!jspdf || !jspdf.jsPDF) {
+            alert('No se pudo generar el PDF: librería jsPDF no está disponible.');
+            return;
+        }
+        // Verificar plugin autoTable
+        try {
+            const testDoc = new jspdf.jsPDF();
+            if (typeof testDoc.autoTable !== 'function') {
+                alert('No se pudo generar el PDF: plugin jsPDF-AutoTable no está disponible.');
+                return;
+            }
+        } catch (e) {
+            console.error('Error al verificar jsPDF-AutoTable:', e);
+            alert('No se pudo generar el PDF: error al inicializar jsPDF-AutoTable.');
+            return;
+        }
+        if (!Array.isArray(columns) || !columns.length || !Array.isArray(rows) || !rows.length) {
+            alert('No hay datos para generar el reporte.');
+            return;
+        }
+
+        const { jsPDF } = jspdf;
+        const doc = new jsPDF('p', 'pt', 'a4');
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const marginLeft = 40;
+        const marginRight = 40;
+        const headerHeight = 90;
+        const footerHeight = 50;
+        const fechaTexto = formatReportDateTime();
+        const logoDataUrl = await loadOrangeHearthLogoForPdf().catch(() => null);
+        const estadoIndex = columns.findIndex(c => String(c || '').toLowerCase().includes('estado'));
+
+        doc.autoTable({
+            head: [columns],
+            body: rows,
+            startY: headerHeight,
+            margin: { top: headerHeight, bottom: footerHeight, left: marginLeft, right: marginRight },
+            styles: {
+                fontSize: 10,
+                cellPadding: 6,
+                lineColor: [230, 230, 230],
+                lineWidth: 0.5,
+                textColor: [51, 51, 51]
+            },
+            headStyles: {
+                fillColor: ORANGE_PDF_COLORS.naranja,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: ORANGE_PDF_COLORS.fondo
+            },
+            didParseCell: function (data) {
+                if (data.section === 'body' && estadoIndex >= 0 && data.column.index === estadoIndex) {
+                    const value = String(data.cell.raw || '').toLowerCase();
+                    if (value.includes('activo')) {
+                        data.cell.styles.textColor = ORANGE_PDF_COLORS.verde;
+                        data.cell.styles.fontStyle = 'bold';
+                    } else if (value.includes('inactivo')) {
+                        data.cell.styles.textColor = ORANGE_PDF_COLORS.gris;
+                    } else if (value.includes('pendiente')) {
+                        data.cell.styles.textColor = ORANGE_PDF_COLORS.naranjaOscuro;
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                }
+            },
+            didDrawPage: function (data) {
+                // Encabezado
+                if (logoDataUrl) {
+                    const logoWidth = 40;
+                    const logoHeight = 40;
+                    doc.addImage(logoDataUrl, 'PNG', marginLeft, 24, logoWidth, logoHeight);
+                }
+                doc.setFontSize(16);
+                doc.setTextColor(ORANGE_PDF_COLORS.azulOscuro[0], ORANGE_PDF_COLORS.azulOscuro[1], ORANGE_PDF_COLORS.azulOscuro[2]);
+                doc.text(String(title || 'Reporte'), pageWidth / 2, 36, { align: 'center' });
+
+                doc.setFontSize(10);
+                doc.setTextColor(ORANGE_PDF_COLORS.gris[0], ORANGE_PDF_COLORS.gris[1], ORANGE_PDF_COLORS.gris[2]);
+                doc.text('Generado: ' + fechaTexto, pageWidth - marginRight, 24, { align: 'right' });
+
+                // Franja naranja
+                doc.setDrawColor(ORANGE_PDF_COLORS.naranja[0], ORANGE_PDF_COLORS.naranja[1], ORANGE_PDF_COLORS.naranja[2]);
+                doc.setFillColor(ORANGE_PDF_COLORS.naranja[0], ORANGE_PDF_COLORS.naranja[1], ORANGE_PDF_COLORS.naranja[2]);
+                doc.rect(marginLeft, 60, pageWidth - marginLeft - marginRight, 3, 'F');
+
+                // Pie de página
+                doc.setFontSize(9);
+                doc.setTextColor(150, 150, 150);
+                const footerText = 'OrangeHearth \u2013 Gestión Veterinaria Inteligente';
+                doc.text(footerText, marginLeft, pageHeight - 24);
+                const totalPages = doc.internal.getNumberOfPages();
+                const pageLabel = 'Página ' + data.pageNumber + ' de ' + totalPages;
+                doc.text(pageLabel, pageWidth - marginRight, pageHeight - 24, { align: 'right' });
+            }
+        });
+
+        const safeName = (filename || title || 'Reporte').toString().trim().replace(/\s+/g, '_');
+        doc.save(safeName + '.pdf');
+    }
+
+    async function exportToPDF(tableId, title) {
         const table = document.getElementById(tableId);
         if (!table) { alert('Tabla no encontrada'); return; }
-        const clone = table.cloneNode(true);
-        clone.querySelectorAll('tr').forEach(tr => { if (tr.lastElementChild) tr.removeChild(tr.lastElementChild); });
-        const w = window.open('', '_blank');
-        w.document.write('<html><head><title>'+ (title||'Reporte') +'</title>');
-        w.document.write('<style>body{font-family:Arial,Helvetica,sans-serif;padding:20px} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ddd;padding:8px;font-size:12px} th{background:#f3f3f3}</style>');
-        w.document.write('</head><body>');
-        w.document.write('<h3>'+ (title||'Reporte') +'</h3>');
-        w.document.write(clone.outerHTML);
-        w.document.write('</body></html>');
-        w.document.close();
-        w.focus();
-        w.print();
+
+        const headerCells = Array.from(table.querySelectorAll('thead tr th'));
+        if (!headerCells.length) { alert('La tabla no tiene encabezado.'); return; }
+
+        // Excluir la columna de Acciones (última)
+        const columns = headerCells.slice(0, -1).map(th => (th.innerText || th.textContent || '').trim());
+
+        const rows = [];
+        const bodyRows = table.querySelectorAll('tbody tr');
+        bodyRows.forEach(tr => {
+            const cells = Array.from(tr.querySelectorAll('td'));
+            if (!cells.length) return;
+            const dataCells = cells.slice(0, columns.length);
+            const row = dataCells.map(td => (td.innerText || td.textContent || '').trim());
+            if (row.length) {
+                rows.push(row);
+            }
+        });
+
+        if (!rows.length) {
+            alert('No hay datos para exportar.');
+            return;
+        }
+
+        await buildOrangeHearthPDF({
+            title: title || 'Reporte',
+            columns,
+            rows,
+            filename: (title || 'Reporte').replace(/\s+/g, '_')
+        });
     }
 
     async function exportAllUsersCSV() {
@@ -1375,18 +1681,62 @@
                 const rv = await fetch('/api/admin/veterinarios', { headers: { 'X-ADMIN-TOKEN': token } });
                 vetsCache = await rv.json();
             }
-            const w = window.open('', '_blank');
-            w.document.write('<html><head><title>Usuarios de la Clínica</title>');
-            w.document.write('<style>body{font-family:Arial,Helvetica,sans-serif;padding:20px} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ddd;padding:8px;font-size:12px} th{background:#f3f3f3}</style>');
-            w.document.write('</head><body>');
-            w.document.write('<h3>Usuarios de la Clínica</h3>');
-            w.document.write('<table><thead><tr><th>Tipo</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Especialidad</th><th>Tarjeta</th><th>Mascotas</th><th>Estado</th></tr></thead><tbody>');
-            (tutoresCache||[]).forEach(t => { w.document.write(`<tr><td>Tutor</td><td>${t.nombreCompleto||''}</td><td>${t.correo||''}</td><td>${t.telefono||''}</td><td></td><td></td><td>${(t.mascotas||[]).length||0}</td><td>${t.estado||'ACTIVE'}</td></tr>`); });
-            (vetsCache||[]).forEach(v => { w.document.write(`<tr><td>Veterinario</td><td>${v.nombreCompleto||''}</td><td>${v.correo||''}</td><td>${v.telefono||''}</td><td>${v.especialidad||''}</td><td>${v.tarjetaProfesional||''}</td><td></td><td>${v.estado||v.status||'ACTIVE'}</td></tr>`); });
-            w.document.write('</tbody></table></body></html>');
-            w.document.close();
-            w.focus();
-            w.print();
+            const columns = ['Tipo','Nombre','Email','Teléfono','Especialidad','Tarjeta','Mascotas','Estado'];
+            const rows = [];
+
+            (tutoresCache || []).forEach(t => {
+                const estadoRaw = (t.estado || 'ACTIVE');
+                const estadoUpper = String(estadoRaw).toUpperCase();
+                let estadoTexto = 'Activo';
+                if (estadoUpper === 'INACTIVE') {
+                    estadoTexto = 'Inactivo';
+                } else if (estadoUpper === 'PENDING') {
+                    estadoTexto = 'Pendiente';
+                }
+                rows.push([
+                    'Tutor',
+                    t.nombreCompleto || '',
+                    t.correo || '',
+                    t.telefono || '',
+                    '',
+                    '',
+                    (t.mascotas || []).length || 0,
+                    estadoTexto
+                ]);
+            });
+
+            (vetsCache || []).forEach(v => {
+                const estadoRaw = (v.estado || v.status || 'ACTIVE');
+                const estadoUpper = String(estadoRaw).toUpperCase();
+                let estadoTexto = 'Activo';
+                if (estadoUpper === 'INACTIVE') {
+                    estadoTexto = 'Inactivo';
+                } else if (estadoUpper === 'PENDING') {
+                    estadoTexto = 'Pendiente';
+                }
+                rows.push([
+                    'Veterinario',
+                    v.nombreCompleto || '',
+                    v.correo || '',
+                    v.telefono || '',
+                    v.especialidad || '',
+                    v.tarjetaProfesional || '',
+                    '',
+                    estadoTexto
+                ]);
+            });
+
+            if (!rows.length) {
+                alert('No hay datos para exportar.');
+                return;
+            }
+
+            await buildOrangeHearthPDF({
+                title: 'Usuarios de la Clínica',
+                columns,
+                rows,
+                filename: 'Usuarios_Clinica'
+            });
         } catch (e) { alert('No se pudo exportar: '+e.message); }
     }
 
@@ -1561,29 +1911,128 @@
     // =========================================================
     //                      GESTIÓN DE CITAS (Sección 6)
     // =========================================================
-    function cargarCitasList() {
-        const tbody = document.getElementById('citasTableBody');
-        if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay citas agendadas.</td></tr>';
-        // Nota: cuando exista API de citas reales, conectar aquí.
-    }
-    
-    function filterCitasList() {
-        const citas = JSON.parse(localStorage.getItem('citas')) || [];
-        const filtroTutor = document.getElementById('filtro-tutor').value.toLowerCase();
-        const filtroEstado = document.getElementById('filtro-estado-cita').value;
-        const filtroVet = document.getElementById('filtro-veterinario').value;
+	    let citasCache = [];
 
-        const filtered = citas.filter(cita => {
-            const tutorMatch = cita.tutorEmail.toLowerCase().includes(filtroTutor);
-            const estadoMatch = filtroEstado === '' || cita.estado === filtroEstado;
-            const vetMatch = filtroVet === '' || cita.veterinario === filtroVet;
-            
-            return tutorMatch && estadoMatch && vetMatch;
-        });
-        
-        cargarCitasList(filtered);
-    }
+	    async function cargarCitasList(citasFiltradas) {
+	        const tbody = document.getElementById('citasTableBody');
+	        if (!tbody) return;
+
+	        if (!citasFiltradas) {
+	            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Cargando citas...</td></tr>';
+	            try {
+	                const resp = await fetch('/api/citas');
+	                const lista = await resp.json().catch(() => []);
+	                citasCache = Array.isArray(lista) ? lista : [];
+	            } catch (e) {
+	                console.error('No se pudieron cargar las citas:', e);
+	                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc3545;">No se pudieron cargar las citas.</td></tr>';
+	                return;
+	            }
+	        }
+
+	        const data = citasFiltradas || citasCache;
+	        tbody.innerHTML = '';
+
+	        if (!data.length) {
+	            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay citas agendadas.</td></tr>';
+	            return;
+	        }
+
+	        data.forEach(cita => {
+	            const fecha = cita.fechaHora ? new Date(cita.fechaHora) : null;
+	            const fechaTexto = fecha ? fecha.toLocaleDateString('es-ES') : '';
+	            const horaTexto = fecha ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+	            const estadoRaw = (cita.estado || 'PROGRAMADA').toString().toUpperCase();
+	            const estadoTexto = estadoRaw.charAt(0) + estadoRaw.slice(1).toLowerCase();
+
+	            const row = document.createElement('tr');
+	            row.innerHTML = `
+	              <td data-label="ID Cita">${cita.id}</td>
+	              <td data-label="Tutor">${cita.tutorCorreo}</td>
+	              <td data-label="Mascota">${cita.mascotaNombre}</td>
+	              <td data-label="Veterinario">${cita.veterinarioNombre}</td>
+	              <td data-label="Fecha/Hora">${fechaTexto} ${horaTexto}</td>
+	              <td data-label="Motivo">${cita.motivo || ''}</td>
+	              <td data-label="Estado">${estadoTexto}</td>
+	              <td data-label="Acciones">
+	                <button class="btn btn-secondary" style="padding:4px 8px;margin-right:4px;"
+	                        onclick="adminConfirmarCita(${cita.id})">Confirmar</button>
+	                <button class="btn btn-secondary" style="padding:4px 8px;margin-right:4px;"
+	                        onclick="adminCancelarCita(${cita.id})">Cancelar</button>
+	                <button class="btn btn-secondary" style="padding:4px 8px;"
+	                        onclick="adminReprogramarCita(${cita.id})">Reprogramar</button>
+	              </td>
+	            `;
+	            tbody.appendChild(row);
+	        });
+	    }
+	    
+	    function filterCitasList() {
+	        const filtroTutor = document.getElementById('filtro-tutor').value.toLowerCase();
+	        const filtroEstado = document.getElementById('filtro-estado-cita').value;
+	        const filtroVet = document.getElementById('filtro-veterinario').value.toLowerCase();
+
+	        if (!citasCache.length) {
+	            cargarCitasList();
+	            return;
+	        }
+
+	        const filtered = citasCache.filter(cita => {
+	            const tutorMatch = !filtroTutor || (cita.tutorCorreo || '').toLowerCase().includes(filtroTutor);
+	            const estadoMatch = !filtroEstado || (cita.estado || '').toLowerCase() === filtroEstado.toLowerCase();
+	            const vetMatch = !filtroVet || (cita.veterinarioNombre || '').toLowerCase().includes(filtroVet);
+	            return tutorMatch && estadoMatch && vetMatch;
+	        });
+	        
+	        cargarCitasList(filtered);
+	    }
+
+	    async function adminActualizarCita(id, payload) {
+	        if (!id) return;
+	        try {
+	            const resp = await fetch(`/api/citas/${id}`, {
+	                method: 'PATCH',
+	                headers: { 'Content-Type': 'application/json' },
+	                body: JSON.stringify(Object.assign({ admin: true }, payload || {}))
+	            });
+	            const data = await resp.json().catch(() => null);
+	            if (!resp.ok) {
+	                const msg = data && data.message ? data.message : 'No se pudo actualizar la cita.';
+	                alert('❌ ' + msg);
+	                return;
+	            }
+	            await cargarCitasList();
+	            if (typeof cargarResumenGeneral === 'function') {
+	                cargarResumenGeneral();
+	            }
+	        } catch (e) {
+	            console.error('Error actualizando cita como admin:', e);
+	            alert('❌ Error de comunicación con el servidor al actualizar la cita.');
+	        }
+	    }
+
+	    function adminConfirmarCita(id) {
+	        if (!confirm('¿Deseas confirmar esta cita?')) return;
+	        adminActualizarCita(id, { nuevoEstado: 'CONFIRMADA' });
+	    }
+
+	    function adminCancelarCita(id) {
+	        if (!confirm('¿Deseas cancelar esta cita?')) return;
+	        adminActualizarCita(id, { nuevoEstado: 'CANCELADA' });
+	    }
+
+	    function adminReprogramarCita(id) {
+	        const nuevaFecha = prompt('Ingresa la nueva fecha (formato YYYY-MM-DD):');
+	        if (!nuevaFecha) return;
+	        const nuevaHora = prompt('Ingresa la nueva hora (formato HH:MM, 24 horas):');
+	        if (!nuevaHora) return;
+	        const fechaCompleta = new Date(`${nuevaFecha}T${nuevaHora}:00`);
+	        if (isNaN(fechaCompleta.getTime())) {
+	            alert('❌ Fecha u hora inválidas.');
+	            return;
+	        }
+	        adminActualizarCita(id, { nuevaFechaHora: fechaCompleta.toISOString() });
+	    }
 
     // Función para que el admin pueda agendar una cita para un tutor
     function adminAgendarCita(tutorEmail) {
@@ -1677,6 +2126,8 @@
             especialidad: document.getElementById('vet-especialidad').value,
             aniosExperiencia: 0,
             password: document.getElementById('vet-password').value,
+            securityQuestion: document.getElementById('vet-security-question').value,
+            securityAnswer: document.getElementById('vet-security-answer').value,
             // Estos nombres de campo coinciden con los alias JSON
             // definidos en SolicitudCreacionVeterinario (doc_numero -> cedula, doc_tipo -> docTipo)
             doc_tipo: document.getElementById('vet-doc-tipo').value,
@@ -1690,6 +2141,7 @@
             document.getElementById('vet-message').innerHTML = `✅ Veterinario <strong>${payload.nombreCompleto}</strong> registrado con éxito.`;
             form.reset();
             cargarTablaVeterinarios();
+            cargarResumenGeneral();
         } catch (e) {
             document.getElementById('vet-message').style.color = 'var(--rojo)';
             document.getElementById('vet-message').textContent = '❌ No se pudo registrar: ' + e.message;
@@ -1697,108 +2149,6 @@
         return false;
     }
     
-    // =========================================================
-    //                      GRÁFICOS (Sección 2)
-    // =========================================================
-    function renderUserTypeChart() {
-         if (userTypeChartInstance) userTypeChartInstance.destroy();
-         // Datos para el gráfico 1
-        const tutores = (JSON.parse(localStorage.getItem('registrosUsuarios')) || []).length;
-        const veterinarios = (JSON.parse(localStorage.getItem('veterinarios')) || []).length;
-        const ctxUserType = document.getElementById('userTypeChart')?.getContext('2d');
-        if (ctxUserType) {
-            userTypeChartInstance = new Chart(ctxUserType, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Tutores', 'Veterinarios', 'Gerentes'],
-                    datasets: [{
-                        data: [tutores, veterinarios, 1],
-                        backgroundColor: ['#007bff', '#dc3545', '#f28c28'],
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { position: 'right' } } 
-                }
-            });
-        }
-    }
-
-    function renderCharts() {
-        // Destruir instancias existentes para evitar conflictos al re-renderizar
-        if (monthlyChartInstance) monthlyChartInstance.destroy();
-        if (speciesChartInstance) speciesChartInstance.destroy();
-        if (activityChartInstance) activityChartInstance.destroy();
-        
-        // Datos Mock para los gráficos
-        const mockLabels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"];
-        const mockMonthlyData = [50, 75, 120, 150, 200, 180];
-        const mockSpeciesData = [150, 100, 40, 30, 20];
-        const mockActivityData = [15, 20, 10, 35, 25, 40, 30];
-        const mockActivityLabels = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-        
-        // Gráfico 2: Registros por Mes
-        const ctxMonthly = document.getElementById('monthlyChart')?.getContext('2d');
-        if (ctxMonthly) {
-            monthlyChartInstance = new Chart(ctxMonthly, {
-                type: 'bar',
-                data: {
-                    labels: mockLabels,
-                    datasets: [{
-                        label: 'Nuevos Registros',
-                        data: mockMonthlyData,
-                        backgroundColor: 'rgba(242, 140, 40, 0.6)',
-                        borderColor: 'var(--naranja-oscuro)',
-                        borderWidth: 1
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, }
-            });
-        }
-
-        // Gráfico 3: Especies de Mascotas
-        const ctxSpecies = document.getElementById('speciesChart')?.getContext('2d');
-        if (ctxSpecies) {
-            speciesChartInstance = new Chart(ctxSpecies, {
-                type: 'polarArea',
-                data: {
-                    labels: ['Perros', 'Gatos', 'Aves', 'Reptiles', 'Otros'],
-                    datasets: [{
-                        data: mockSpeciesData,
-                        backgroundColor: ['#007bff', '#28a745', '#f28c28', '#dc3545', '#6c757d'],
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
-            });
-        }
-        
-        // Gráfico 4: Actividad del Sistema (Línea)
-        const ctxActivity = document.getElementById('activityChart')?.getContext('2d');
-        if (ctxActivity) {
-            activityChartInstance = new Chart(ctxActivity, {
-                type: 'line',
-                data: {
-                    labels: mockActivityLabels,
-                    datasets: [{
-                        label: 'Acciones en el Sistema',
-                        data: mockActivityData,
-                        borderColor: 'var(--azul-oscuro)',
-                        backgroundColor: 'rgba(45, 47, 86, 0.1)',
-                        tension: 0.4,
-                        fill: true,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-    }
-
     // =========================================================
     //                      PLACEHOLDERS (ACCESIBLES GLOBALMENTE)
     // =========================================================
@@ -1855,7 +2205,14 @@
         document.getElementById('modal-telefono').value = telefono || '';
         document.getElementById('modal-doc-tipo').value = docTipo;
         document.getElementById('modal-doc-numero').value = docNum;
-        document.getElementById('modal-estado').value = (estado || 'activo').toLowerCase();
+        const estadoSelect = document.getElementById('modal-estado');
+        if (estadoSelect) {
+          const raw = (estado || 'activo').toString().toLowerCase();
+          let mapped = 'activo';
+          if (raw === 'inactive' || raw === 'inactivo') mapped = 'inactivo';
+          else if (raw === 'pending' || raw === 'pendiente') mapped = 'pendiente';
+          estadoSelect.value = mapped;
+        }
       };
 
       try {
@@ -1885,17 +2242,32 @@
 	          if (vetTarjeta) { vetTarjeta.readOnly = true; }
 	          if (vetEspecialidad) { vetEspecialidad.disabled = false; vetEspecialidad.required = true; }
 	          if (docTipo) { docTipo.disabled = true; }
-	          if (docNumero) { docNumero.readOnly = true; }
-	          setCommon(
-	            v.nombreCompleto||v.nombre,
-	            v.correo||v.email,
-	            v.telefono||v.phoneNumber,
-	            ((v.estado||v.status)||'ACTIVE').toLowerCase(),
-	            'CC',
-	            v.cedula || ''
-	          );
+          if (docNumero) { docNumero.readOnly = true; }
+          setCommon(
+            v.nombreCompleto||v.nombre,
+            v.correo||v.email,
+            v.telefono||v.phoneNumber,
+            (v.estado||v.status)||'ACTIVE',
+            'CC',
+            v.cedula || ''
+          );
           document.getElementById('modal-vet-tarjeta').value = v.tarjetaProfesional || v.professionalLicense || '';
           document.getElementById('modal-vet-especialidad').value = v.especialidad || '';
+          const qSelect = document.getElementById('modal-vet-security-question');
+          if (qSelect) {
+            const existingQuestion = v.securityQuestion || '';
+            if (existingQuestion && !Array.from(qSelect.options).some(o => o.value === existingQuestion)) {
+              const opt = document.createElement('option');
+              opt.value = existingQuestion;
+              opt.textContent = existingQuestion;
+              qSelect.appendChild(opt);
+            }
+            qSelect.value = existingQuestion || '';
+          }
+          const answerInput = document.getElementById('modal-vet-security-answer');
+          if (answerInput) {
+            answerInput.value = '';
+          }
           // Habilitar edición de email para veterinario
           const emailInput = document.getElementById('modal-email');
           if (emailInput) emailInput.disabled = false;
@@ -1919,19 +2291,38 @@
 
       try {
         if (userType === 'tutor') {
-          // Actualizar datos básicos del tutor (teléfono/dirección)
-          const payload = { telefono: telefono, direccion: { completo: direccion } };
+          // Actualizar datos básicos del tutor (nombre, teléfono, dirección y estado)
+          const mapEstado = { activo: 'ACTIVE', inactivo: 'INACTIVE', pendiente: 'PENDING' };
+          const payload = { nombreCompleto: nombre, telefono };
+          if (direccion) {
+            payload.direccion = { completo: direccion };
+          }
+          const estadoEnum = mapEstado[estado] || 'ACTIVE';
+          payload.estado = estadoEnum;
           const resp = await fetch(`/api/tutores/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
           if (!resp.ok) { const d = await resp.json().catch(()=>null); throw new Error(d?.message || resp.status); }
           alert('✅ Cambios guardados para el Tutor.');
           cargarTablaTutores();
+          cargarResumenGeneral();
         } else {
           const token = (localStorage.getItem('adminSessionToken')||'').replace(/"/g,'');
           // Validar campos obligatorios
           const tarjeta = document.getElementById('modal-vet-tarjeta').value.trim();
           const especialidad = document.getElementById('modal-vet-especialidad').value.trim();
           if (!nombre || !correo || !telefono || !especialidad || !tarjeta) { alert('Todos los campos del veterinario son obligatorios.'); return false; }
+          const securityQuestion = document.getElementById('modal-vet-security-question')?.value || '';
+          const securityAnswer = document.getElementById('modal-vet-security-answer')?.value || '';
+          if (!securityQuestion) {
+            alert('Debes seleccionar una pregunta de seguridad para el veterinario.');
+            return false;
+          }
           const payloadPut = { nombreCompleto: nombre, correo, telefono, especialidad, tarjetaProfesional: tarjeta };
+          if (securityQuestion) {
+            payloadPut.securityQuestion = securityQuestion;
+          }
+          if (securityAnswer) {
+            payloadPut.securityAnswer = securityAnswer;
+          }
           const respPut = await fetch(`/api/admin/veterinarios/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-ADMIN-TOKEN': token }, body: JSON.stringify(payloadPut) });
           if (!respPut.ok) { const d = await respPut.json().catch(()=>null); throw new Error(d?.message || respPut.status); }
           const mapEstado = { activo: 'ACTIVE', inactivo: 'INACTIVE', pendiente: 'PENDING' };
@@ -1940,6 +2331,7 @@
           if (!respEstado.ok) { const d2 = await respEstado.json().catch(()=>null); throw new Error(d2?.message || respEstado.status); }
           alert('✅ Datos del Veterinario actualizados.');
           cargarTablaVeterinarios();
+          cargarResumenGeneral();
         }
         closeModal('modificationModal');
         return false;

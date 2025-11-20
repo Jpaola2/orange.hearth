@@ -15,6 +15,7 @@ import com.orangehearth.OrangeHearth.model.enums.EstadoCuenta;
 import com.orangehearth.OrangeHearth.model.enums.Rol;
 import com.orangehearth.OrangeHearth.repository.RepositorioCuentasUsuario;
 import com.orangehearth.OrangeHearth.repository.RepositorioVeterinarios;
+import com.orangehearth.OrangeHearth.service.ServicioVeterinarios;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +26,7 @@ public class ServicioAutenticacion {
 	private final RepositorioCuentasUsuario userAccountRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final RepositorioVeterinarios veterinarianRepository;
+	private final ServicioVeterinarios veterinariosService;
 
 	@Transactional
 	public RespuestaAutenticacion loginTutor(SolicitudInicioSesionTutor request) {
@@ -39,7 +41,13 @@ public class ServicioAutenticacion {
 	public RespuestaAutenticacion loginVeterinarian(SolicitudInicioSesionVeterinario request) {
 		CuentaUsuario account = userAccountRepository.findByEmailIgnoreCase(request.correo())
 			.filter(user -> user.getRol() == Rol.VETERINARIO)
-			.orElseThrow(() -> new ExcepcionValidacion("Credenciales inválidas."));
+			.orElse(null);
+
+		// Si no existe cuenta de usuario para este veterinario,
+		// intentar migrarlo desde la tabla legacy medico_veterinario.
+		if (account == null) {
+			account = veterinariosService.asegurarCuentaParaLoginDesdeLegacy(request);
+		}
 
 		veterinarianRepository.findByUserAccountId(account.getId())
 			.filter(vet -> vet.getProfessionalLicense().equalsIgnoreCase(request.tarjetaProfesional()))

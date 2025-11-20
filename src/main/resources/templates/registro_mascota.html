@@ -63,29 +63,92 @@
   </div>
 
   <script>
-    document.getElementById("form-mascota").addEventListener("submit", function(e) {
+    document.getElementById("form-mascota").addEventListener("submit", async function(e) {
       e.preventDefault();
 
-      const correoTutor = localStorage.getItem("tutorActivo");
-      if (!correoTutor) {
-        alert("No se encontró el tutor activo.");
+      // Obtener sesión de tutor desde storage (compatibilidad con versiones previas)
+      const rawSession = localStorage.getItem("tutorActivo") || sessionStorage.getItem("tutorActivo");
+      if (!rawSession) {
+        alert("Debes iniciar sesión como tutor antes de registrar una mascota.");
+        window.location.href = "login-rol.html";
         return;
       }
 
-      const nombre = document.getElementById("nombre").value;
-      const especie = document.getElementById("especie").value;
-      const raza = document.getElementById("raza").value;
-      const edad = document.getElementById("edad").value;
+      let correoTutor = null;
+      try {
+        const parsed = JSON.parse(rawSession);
+        correoTutor = parsed.correo || parsed.email || null;
+      } catch (err) {
+        correoTutor = rawSession;
+      }
 
-      const nuevaMascota = { nombre, especie, raza, edad };
-      const clave = `mascotas_${correoTutor}`;
-      const lista = JSON.parse(localStorage.getItem(clave)) || [];
+      if (!correoTutor || !correoTutor.includes('@')) {
+        alert("No se pudo determinar el tutor activo. Inicia sesión nuevamente.");
+        window.location.href = "login-rol.html";
+        return;
+      }
 
-      lista.push(nuevaMascota);
-      localStorage.setItem(clave, JSON.stringify(lista));
-      localStorage.setItem("mascotaSeleccionada", nombre);
+      const nombre = document.getElementById("nombre").value.trim();
+      const especie = document.getElementById("especie").value.trim();
+      const raza = document.getElementById("raza").value.trim();
+      const edadTexto = document.getElementById("edad").value.trim();
+      const edadValor = parseInt(edadTexto, 10);
 
-      window.location.href = "dashboardTutor.html";
+      if (!nombre || !especie || !raza || !edadTexto) {
+        alert("Todos los campos son obligatorios.");
+        return;
+      }
+      if (Number.isNaN(edadValor) || edadValor < 1) {
+        alert("La edad debe ser un número mayor o igual a 1.");
+        return;
+      }
+
+      // Construir payload compatible con SolicitudMascota (edadUnidad fija: 'años')
+      const mascotaPayload = {
+        nombre,
+        especie,
+        raza,
+        edadValor,
+        edadUnidad: "años"
+      };
+
+      try {
+        // 1) Obtener el ID real del tutor a partir del correo
+        const respTutores = await fetch("/api/tutores");
+        const listaTutores = await respTutores.json().catch(() => []);
+        const tutores = Array.isArray(listaTutores) ? listaTutores : [];
+
+        const tutor = tutores.find(t => (t.correo || '').toLowerCase() === correoTutor.toLowerCase());
+        if (!tutor || typeof tutor.id !== "number") {
+          alert("No se encontró el tutor en el sistema. Intenta iniciar sesión de nuevo.");
+          return;
+        }
+
+        const tutorId = tutor.id;
+
+        // 2) Registrar la mascota en el backend, asociada al tutor correcto
+        const respMascota = await fetch(`/api/mascotas?tutorId=${encodeURIComponent(tutorId)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mascotaPayload)
+        });
+
+        const dataMascota = await respMascota.json().catch(() => null);
+        if (!respMascota.ok) {
+          const mensaje = dataMascota?.message || "No se pudo registrar la mascota.";
+          alert(`❌ ${mensaje}`);
+          return;
+        }
+
+        alert("✅ Mascota registrada con éxito.");
+        // Opcional: mantener compatibilidad con lógica basada en localStorage de citas
+        localStorage.setItem("mascotaSeleccionada", nombre);
+
+        window.location.href = "dashboardTutor.html";
+      } catch (error) {
+        console.error("Error registrando mascota:", error);
+        alert("❌ Ocurrió un error al registrar la mascota. Inténtalo de nuevo.");
+      }
     });
   </script>
 </body>

@@ -26,5 +26,9 @@ public record SolicitudCreacionVeterinario(
     @JsonAlias({"doc_numero", "docNumero"})
     String cedula,
     @JsonAlias({"doc_tipo", "docTipo"})
-    String docTipo
+    String docTipo,
+    @NotBlank(message = "La pregunta de seguridad es obligatoria")
+    String securityQuestion,
+    @NotBlank(message = "La respuesta de seguridad es obligatoria")
+    String securityAnswer
 ) { }

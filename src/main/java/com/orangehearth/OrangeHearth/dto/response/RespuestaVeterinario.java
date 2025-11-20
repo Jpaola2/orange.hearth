@@ -11,5 +11,6 @@ public record RespuestaVeterinario(
 	String especialidad,
 	Integer aniosExperiencia,
 	String cedula,
-	EstadoCuenta estado
+	EstadoCuenta estado,
+	String securityQuestion
 ) { }

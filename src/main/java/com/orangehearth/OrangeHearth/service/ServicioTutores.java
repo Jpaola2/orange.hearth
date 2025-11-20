@@ -98,11 +98,17 @@ public class ServicioTutores {
 		Tutor tutor = tutorRepository.findById(id)
 			.orElseThrow(() -> new ExcepcionRecursoNoEncontrado("Tutor no encontrado"));
 
+		if (request.nombreCompleto() != null && !request.nombreCompleto().isBlank()) {
+			tutor.getCuentaUsuario().setFullName(request.nombreCompleto().trim());
+		}
 		if (request.telefono() != null) {
 			tutor.setPhoneNumber(request.telefono());
 		}
 		if (request.direccion() != null) {
 			tutor.setDireccion(buildDireccion(request.direccion()));
+		}
+		if (request.estado() != null) {
+			tutor.getCuentaUsuario().setStatus(request.estado());
 		}
 
 		return mapToResponse(tutor);
@@ -163,7 +169,8 @@ public class ServicioTutores {
 			tutor.getDocumentType() + " " + tutor.getDocumentNumber(),
 			tutor.getDireccion() != null ? tutor.getDireccion().getCompleto() : "",
 			mascotas,
-			tutor.getCuentaUsuario().getStatus()
+			tutor.getCuentaUsuario().getStatus(),
+			tutor.getCreatedAt()
 		);
 	}
 }

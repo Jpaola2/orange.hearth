@@ -12,7 +12,9 @@ import com.orangehearth.OrangeHearth.dto.request.SolicitudConfirmacionRestableci
 import com.orangehearth.OrangeHearth.dto.request.SolicitudRestablecimientoContrasena;
 import com.orangehearth.OrangeHearth.dto.request.SolicitudInicioSesionTutor;
 import com.orangehearth.OrangeHearth.dto.request.SolicitudInicioSesionVeterinario;
+import com.orangehearth.OrangeHearth.dto.request.SolicitudConfirmacionSeguridadVeterinario;
 import com.orangehearth.OrangeHearth.dto.response.RespuestaAutenticacion;
+import com.orangehearth.OrangeHearth.dto.response.RespuestaPreguntaSeguridad;
 import com.orangehearth.OrangeHearth.service.ServicioAutenticacion;
 import com.orangehearth.OrangeHearth.service.ServicioRestablecimientoContrasena;
 
@@ -50,6 +52,22 @@ public class ControladorAutenticacion {
 		@Valid @RequestBody SolicitudConfirmacionRestablecimiento request
 	) {
 		passwordResetService.confirmVeterinarianReset(request);
+		return "Contraseña actualizada con éxito.";
+	}
+
+	@PostMapping("/veterinarios/password-reset/security-question")
+	public RespuestaPreguntaSeguridad getVeterinarianSecurityQuestion(
+		@Valid @RequestBody SolicitudRestablecimientoContrasena request
+	) {
+		String question = passwordResetService.getVeterinarianSecurityQuestion(request);
+		return new RespuestaPreguntaSeguridad(question);
+	}
+
+	@PostMapping("/veterinarios/password-reset/security-confirm")
+	public String confirmVeterinarianPasswordResetBySecurity(
+		@Valid @RequestBody SolicitudConfirmacionSeguridadVeterinario request
+	) {
+		passwordResetService.confirmVeterinarianResetBySecurityAnswer(request);
 		return "Contraseña actualizada con éxito.";
 	}
 }
